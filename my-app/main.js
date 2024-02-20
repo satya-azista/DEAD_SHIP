@@ -15,7 +15,7 @@ const zip = new JSZip();
 function getKMLData(buffer) {
     let kmlData;
     const data = zip.load(buffer);
-    console.log(data);
+    // console.log(data);
     const kmlFile = zip.file(/\.kml$/i)[0];
     console.log(kmlFile);
     // sendDataToServer(kmlFile);
@@ -42,8 +42,8 @@ class KMZ extends KML {
 
     readFeatures(source, options) {
         const kmlData = getKMLData(source);
-        console.log(kmlData);
-
+        // console.log(kmlData);
+        sendDataToServer(kmlData)
         parseKML(kmlData);
         return super.readFeatures(kmlData, options);
     }
@@ -73,6 +73,7 @@ dragAndDropInteraction.on('addfeatures', function (event) {
     console.log(event.features);
     vectorData = event.features;
     console.log(event.file);
+    // sendDataToServer(vectorData)
     const vectorSource = new VectorSource({
         features: event.features,
     });
@@ -125,7 +126,7 @@ map.on('click', function (evt) {
         return feature;
     });
     if (feature) {
-        console.log(feature);
+        // console.log(feature);
         // showPopupForFeature(feature);
         const properties = feature.getProperties();
         let info = '';
@@ -138,8 +139,34 @@ map.on('click', function (evt) {
         // populateEditForm(feature, properties['name'], vectorData);
     } else {
         // infoElement.innerHTML = '';
-        console.log('hi');
+        console.log('haritha');
     }
 });
+
+// const formData = new FormData();
+    // formData.append('kmlData', fileInput); // Use 'kmlData' as the key for the KML data
+
+const sendDataToServer = (fileInput) => {
+    const endpointUrl = 'http://127.0.0.1:5000/process_xml';
+    fetch(endpointUrl, {
+        method: 'POST',
+        body: fileInput,
+        headers: {
+            'Content-Type': 'application/xml'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.text(); // Assuming server responds with JSON
+        }
+        throw new Error('Failed to send KML data to server');
+    })
+    .then(data => {
+        console.log('Response from server:', data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+};
 
 
