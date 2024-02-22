@@ -95,9 +95,6 @@ def process_xml():
 def process_csv():
     global AIStime,gdf
     if request.method == 'POST':
-        # data = json.loads(request.data)
-        # csv_data=json.loads(data["csvData"])
-        # print(request.data)
         csv_data=request.data
         csv_io = io.BytesIO(csv_data)
         csv = pd.read_csv(csv_io)
@@ -141,7 +138,6 @@ def process_csv():
             geometry.append(Point(new.longitude, new.latitude))
             geometry_line.append(LineString([(long_start, lat_start), (long_end, lat_end)]))
             # int_points.append(new_pt)
-
 
         int_points_pair = gpd.GeoDataFrame(columns=["IMO", "geometry"], crs="EPSG:4326")
         int_points_pair.geometry = geometry
@@ -215,11 +211,6 @@ def process_csv():
         # gdf_point=gpd.read_file(point)
         # json_point=gdf_point.to_json()
         line=pd.concat([pair_line,single_line])
-        # gdf_line=gpd.read_file(point)
-        # json_line=gdf_line.to_json()
-        # point.to_file(int_point_pair_out, driver="ESRI Shapefile")
-        # line.to_file(pair_line_out, driver="ESRI Shapefile")
-        # [Yesterday 3:33 PM] Rahul Baraskar
         deg = meters_to_degrees(5000,13.5)
         buffer_points = [int_points_pair,int_points_single]
         buffer_imo = []
@@ -233,12 +224,6 @@ def process_csv():
         buffer = gpd.GeoDataFrame(columns= ['IMO','geometry'],crs='EPSG:4326')
         buffer.geometry = buffer_geom
         buffer.IMO = buffer_imo
-        
-        # buffer.to_file(buffer_poly_out, driver='ESRI Shapefile')
-        # gdf_buffer=gpd.read_file(buffer)
-        # json_buffer=gdf_buffer.to_json()
-        # dict={'line':json_line,'point':json_point,'buffer':json_buffer}
-        # print(dict)
         output_folder = current_app.root_path+'/my-app'
         os.makedirs(output_folder, exist_ok=True)
         folder_name_point = "point"
@@ -255,24 +240,35 @@ def process_csv():
             os.makedirs(folder_path_point)
         if not os.path.exists(folder_path_buffer):
             os.makedirs(folder_path_buffer)
-        pair_line_out = folder_path_line + "\\" + "line.shp"
-        int_point_pair_out = folder_path_point + "\\" + "int_point.shp"
+        line_out = folder_path_line + "\\" + "line.shp"
+        point_out = folder_path_point + "\\" + "int_point.shp"
         buffer_poly_out = folder_path_buffer + "\\" + "buffer_poly.shp"
-        # with open(pair_line_out, "w") as json_file:
-        #     json.dump(json_line, json_file)
-        # with open(int_point_pair_out, "w") as json_file:
-        #     json.dump(json_point, json_file)
-        # with open(buffer_poly_out, "w") as json_file:
-        #     json.dump(json_buffer, json_file)
-        int_point_pair_out=r"C:\Users\Training\Desktop\test\line"
-        for root, dirs, files in os.walk(int_point_pair_out):
+        point.to_file(point_out, driver="ESRI Shapefile")
+        line.to_file(line_out, driver="ESRI Shapefile")
+        buffer.to_file(buffer_poly_out,driver="ESRI Shapefile")
+        # int_point_pair_out=r"C:\Users\Training\Desktop\test\line"
+        for root, dirs, files in os.walk(folder_path_point):
             for file in files:
                 if file.endswith(".shp"):
                     # Found a shapefile
-                    shapefile_path = os.path.join(root, file)
-                    gdf_point=gpd.read_file(shapefile_path)
+                    shapefile_path_point = os.path.join(root, file)
+                    gdf_point=gpd.read_file(shapefile_path_point)
                     json_point=gdf_point.to_json()
-        return json_point
+        for root, dirs, files in os.walk(folder_path_line):
+            for file in files:
+                if file.endswith(".shp"):
+                    # Found a shapefile
+                    shapefile_path_line = os.path.join(root, file)
+                    gdf_line=gpd.read_file(shapefile_path_line)
+                    json_line=gdf_line.to_json()
+        for root, dirs, files in os.walk(folder_path_buffer):
+            for file in files:
+                if file.endswith(".shp"):
+                    # Found a shapefile
+                    shapefile_path_buffer = os.path.join(root, file)
+                    gdf_buffer=gpd.read_file(shapefile_path_buffer)
+                    json_buffer=gdf_buffer.to_json()
+        return jsonify(json_point=json_point, json_line=json_line, json_buffer=json_buffer)
     return jsonify({'error': 'Method not allowed'}), 405
 # to get distance and angle between two points.
 def haversine(lon1, lat1, lon2, lat2):
