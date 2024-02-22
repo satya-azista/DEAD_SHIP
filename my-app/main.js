@@ -11,6 +11,7 @@ import { ImageStatic, OSM, Vector as VectorSource } from 'ol/source.js';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
 import Static from 'ol/source/ImageStatic.js';
 import JSZip from 'jszip';
+import DataTile from 'ol/DataTile';
 // import JSZip from 'jszip';
 const zip = new JSZip();
 
@@ -213,18 +214,25 @@ function sendDataToServer(main_csv) {
             throw new Error('Failed to send data to server');
         })
         .then(data => {
-            console.log('Response from server:', data);
-            overlayJson(data);
+            // console.log('Response from server:', data);
+            // overlayJson(data);
+            const { point, line, buffer } = data;
 
+            // Call functions to handle each JSON object as needed
+            overlayJson(point);
+            overlayJson(line);
+            overlayJson(buffer);
         })
-    // .catch(error => {
-    //     console.error('Error:', error);
-    // });
+    .catch(error => {
+        console.error('Error:', error);
+    });
 }
 function overlayJson(featureData) {
     console.log(featureData);
     const vectorSourceJson = new VectorSource({
-        features: new GeoJSON().readFeatures(featureData)
+        features: new GeoJSON().readFeatures(featureData, {
+            featureProjection: 'EPSG:3857' // Assuming your map is in EPSG:3857
+        })
     });
     const vectorLayer = new VectorLayer({
         source: vectorSourceJson
@@ -245,7 +253,7 @@ function sendForImages(file) {
             throw new Error('Failed to send data to server');
         })
         .then(data => {
-            console.log('Response from server:', data);
+            console.log('Response from server:', data[0]);
         })
         .catch(error => {
             console.error('Error:', error);
