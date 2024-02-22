@@ -12,7 +12,6 @@ import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
 import Static from 'ol/source/ImageStatic.js';
 import JSZip from 'jszip';
 import DataTile from 'ol/DataTile';
-// import JSZip from 'jszip';
 const zip = new JSZip();
 
 let main_kml = undefined
@@ -24,7 +23,6 @@ function getKMLData(buffer) {
     const kmlFile = zip.file(/\.kml$/i)[0];
     if (kmlFile) {
         kmlData = kmlFile.asText();
-        // console.log(kmlData);
     }
     return kmlData;
 }
@@ -65,8 +63,6 @@ class KMZ extends KML {
         const kmlData = getKMLData(source);
         console.log(kmlData);
         parseKML(kmlData);
-        // kmlData.then(data => parseKML(data, event.file.name)).catch(error => console.error('Error parsing KML:', error));
-
         return super.readFeatures(kmlData, options);
     }
 }
@@ -89,15 +85,6 @@ csv_Input.addEventListener('change', function (event) {
     const files = event.target.files[0];
     console.log(files);
     sendDataToServer(files)
-    // const reader = new FileReader();
-
-    // reader.onload = function(event) {
-    //     const csvContent = event.target.result;
-    //     const blob = new Blob([csvContent], { type: 'text/csv' });
-    //     sendDataToServer(blob)
-    // }
-    // sendDataToServer(main_kml);
-    // sendcsvDataToServer(main_csv
 })
 fileInput.addEventListener('change', function (event) {
     const files = event.target.files;
@@ -118,7 +105,6 @@ fileInput.addEventListener('change', function (event) {
     }
 });
 function parseKML(kmlData) {
-    // console.log(kmlData);
     sendXmlDataToServer(kmlData)
     main_kml = kmlData
     try {
@@ -197,11 +183,8 @@ function sendDataToServer(main_csv) {
     formData.forEach(function (value, key) {
         post_data[key] = value;
     });
-    // console.log(post_data)
-    // console.log(main_csv);
     const headers = new Headers();
     headers.append('Content-Type', 'text/csv'); // for CSV
-    // console.log(formData)
     fetch('http://127.0.0.1:5000/process_csv', {
         method: 'POST',
         body: main_csv,
@@ -214,8 +197,6 @@ function sendDataToServer(main_csv) {
             throw new Error('Failed to send data to server');
         })
         .then(data => {
-            // console.log('Response from server:', data);
-            // overlayJson(data);
             const { point, line, buffer } = data;
 
             // Call functions to handle each JSON object as needed
