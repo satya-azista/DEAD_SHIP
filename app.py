@@ -268,8 +268,12 @@ def process_csv():
                     shapefile_path_buffer = os.path.join(root, file)
                     gdf_buffer=gpd.read_file(shapefile_path_buffer)
                     json_buffer=gdf_buffer.to_json()
-        return jsonify(json_point=json_point, json_line=json_line, json_buffer=json_buffer)
-    return jsonify({'error': 'Method not allowed'}), 405
+        combined_json = {
+        "point": json_point,
+        "line": json_line,
+        "buffer": json_buffer}
+    # Return the combined JSON object
+    return jsonify(combined_json)
 # to get distance and angle between two points.
 def haversine(lon1, lat1, lon2, lat2):
     """
