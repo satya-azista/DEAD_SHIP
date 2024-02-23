@@ -198,7 +198,18 @@ def process_csv():
         single_line = gpd.GeoDataFrame(columns=["IMO", "geometry"], crs="EPSG:4326")
         single_line.geometry = line_geometry
         single_line.IMO = imo
+        # deg = meters_to_degrees(5000, 13.5)
+        # buffer_geom = int_points_pair.buffer(deg)
+
+        # # buffer_geom.to_file(buffer_poly_out, driver="ESRI Shapefile")
+        # int_points_pair.to_file(int_point_pair_out, driver="ESRI Shapefile")
+        # pair_line.to_file(pair_line_out, driver="ESRI Shapefile")
+        # int_points_single.to_file(int_point_single_out, driver="ESRI Shapefile")
+        # single_line.to_file(single_line_out, driver="ESRI Shapefile")
+
         point=pd.concat([int_points_pair,int_points_single])
+        # gdf_point=gpd.read_file(point)
+        # json_point=gdf_point.to_json()
         line=pd.concat([pair_line,single_line])
         deg = meters_to_degrees(5000,13.5)
         buffer_points = [int_points_pair,int_points_single]
@@ -235,6 +246,7 @@ def process_csv():
         point.to_file(point_out, driver="ESRI Shapefile")
         line.to_file(line_out, driver="ESRI Shapefile")
         buffer.to_file(buffer_poly_out,driver="ESRI Shapefile")
+        # int_point_pair_out=r"C:\Users\Training\Desktop\test\line"
         for root, dirs, files in os.walk(folder_path_point):
             for file in files:
                 if file.endswith(".shp"):
