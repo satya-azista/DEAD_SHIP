@@ -66,7 +66,6 @@ def images():
 
     return "images extraction Failed"
 
-
 @app.route('/process_xml', methods=['POST'])
 def process_xml():
     global AIStime,gdf
@@ -198,27 +197,18 @@ def process_csv():
         single_line = gpd.GeoDataFrame(columns=["IMO", "geometry"], crs="EPSG:4326")
         single_line.geometry = line_geometry
         single_line.IMO = imo
-        # deg = meters_to_degrees(5000, 13.5)
-        # buffer_geom = int_points_pair.buffer(deg)
-
-        # # buffer_geom.to_file(buffer_poly_out, driver="ESRI Shapefile")
-        # int_points_pair.to_file(int_point_pair_out, driver="ESRI Shapefile")
-        # pair_line.to_file(pair_line_out, driver="ESRI Shapefile")
-        # int_points_single.to_file(int_point_single_out, driver="ESRI Shapefile")
-        # single_line.to_file(single_line_out, driver="ESRI Shapefile")
-
         point=pd.concat([int_points_pair,int_points_single])
-        # gdf_point=gpd.read_file(point)
-        # json_point=gdf_point.to_json()
         line=pd.concat([pair_line,single_line])
         deg = meters_to_degrees(5000,13.5)
         buffer_points = [int_points_pair,int_points_single]
         buffer_imo = []
         buffer_geom = []
+        buffer_dict={}
         for points in buffer_points:
             for i in range(len(points.index)):
                 buffer_imo.append(int(points.IMO[i]))
                 points.geometry[i]
+                buffer_dict[points.geometry[i].buffer(deg)]=points.geometry[i]
                 buffer_geom.append(points.geometry[i].buffer(deg))
         
         buffer = gpd.GeoDataFrame(columns= ['IMO','geometry'],crs='EPSG:4326')
@@ -246,7 +236,6 @@ def process_csv():
         point.to_file(point_out, driver="ESRI Shapefile")
         line.to_file(line_out, driver="ESRI Shapefile")
         buffer.to_file(buffer_poly_out,driver="ESRI Shapefile")
-        # int_point_pair_out=r"C:\Users\Training\Desktop\test\line"
         for root, dirs, files in os.walk(folder_path_point):
             for file in files:
                 if file.endswith(".shp"):
@@ -268,12 +257,51 @@ def process_csv():
                     shapefile_path_buffer = os.path.join(root, file)
                     gdf_buffer=gpd.read_file(shapefile_path_buffer)
                     json_buffer=gdf_buffer.to_json()
+        json_ship_point=gdf['geometry'].to_json()
+        ship_list=[]
+        total_ship_list=[]
+        for cord in gdf['geometry']:
+            # check=Point(cord.x,cord.y)
+            total_ship_list.append(cord)
+        dead_ship=[]
+        for pol in buffer_geom:
+            polygon = Polygon(pol)
+            a=[]
+            for iter in total_ship_list:
+                point_to_check = Point(iter.x,iter.y)  # Example point coordinates
+                # Check if the point lies within the polygon
+                if polygon.contains(point_to_check):
+                    a.append(point_to_check)
+            if len(a)==1:
+                ship_list.append(a[0])
+            elif len(a)==0:
+                pass
+            else:
+                nearest_point=a[0]
+                nearest_dist,_=haversine(a[0].x,buffer_dict[pol].x,a[0].y,buffer_dict[pol].y)
+                for ship in a:
+                    dist,_=haversine(ship.x,buffer_dict[pol].x,ship.y,buffer_dict[pol].y)
+                    if dist < nearest_dist:
+                        nearest_dist=dist
+                        nearest_point=ship
+                ship_list.append(nearest_point)
+        ship_list_gdf = gpd.GeoDataFrame(geometry=ship_list)
+        # for iter in total_ship_list:
+        #     point_to_check = Point(iter.x,iter.y)  # Example point coordinates
+        #     iter=point_to_check
+        json_total_ship_point=gpd.GeoDataFrame(geometry=total_ship_list)
+        json_ship_list_point=ship_list_gdf.to_json()
+        json_total_ship=json_total_ship_point.to_json()
         combined_json = {
-        "point": json_point,
+        "ais_point":json_point,
+        "point": json_ship_list_point,
         "line": json_line,
-        "buffer": json_buffer}
+        "buffer": json_buffer,
+        "ship_point":json_total_ship
+        }
     # Return the combined JSON object
     return jsonify(combined_json)
+    # return jsonify(json_ship_list_point)
 # to get distance and angle between two points.
 def haversine(lon1, lat1, lon2, lat2):
     """
