@@ -290,6 +290,8 @@ def process_csv():
         #     point_to_check = Point(iter.x,iter.y)  # Example point coordinates
         #     iter=point_to_check
         json_total_ship_point=gpd.GeoDataFrame(geometry=total_ship_list)
+        print(len(ship_list_gdf))
+        print(len(total_ship_list))
         json_ship_list_point=ship_list_gdf.to_json()
         json_total_ship=json_total_ship_point.to_json()
         combined_json = {
