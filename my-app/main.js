@@ -7,6 +7,7 @@ import { ImageStatic, OSM, Vector as VectorSource } from 'ol/source.js';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
 import JSZip from 'jszip';
 import MousePosition from 'ol/control/MousePosition.js';
+import { Style, Fill, Stroke, Circle } from 'ol/style';
 const zip = new JSZip();
  
 let main_kml = undefined
@@ -142,7 +143,7 @@ function parseKML(kmlData) {
         const vectorLayer = new VectorLayer({
             source: vectorSource
         });
-        map.addLayer(vectorLayer);
+        // map.addLayer(vectorLayer);
     } catch (error) {
         console.error('Error parsing KML and adding image overlay:', error);
     }
@@ -205,24 +206,52 @@ function sendDataToServer(main_csv) {
         .then(data => {
             const { ais_point,point, line, buffer,ship_point } = data;
             // Call functions to handle each JSON object as needed
-            overlayJson(ais_point); //Blue
-            overlayJson(point);  //Green
+            overlayJson(ais_point,'blue'); //Blue
+            overlayJson(ship_point,'red') //Red
+            overlayJson(point,'green');  //Green
             // overlayJson(line); 
             // overlayJson(buffer); 
-            overlayJson(ship_point) //Red
         })
     .catch(error => {
         console.error('Error:', error);
     });
 }
-function overlayJson(featureData) {
+function overlayJson(featureData,color) {
     const vectorSourceJson = new VectorSource({
         features: new GeoJSON().readFeatures(featureData, {
             featureProjection: 'EPSG:3857' // Assuming your map is in EPSG:3857
         })
     });
     const vectorLayer = new VectorLayer({
-        source: vectorSourceJson
+        source: vectorSourceJson,
+        // style: {
+        //     'fill-color': 'rgba(255, 0, 0, 0.6)',
+        //     'stroke-width': 1,
+        //     'stroke-color': '#319FD3',
+        //     'circle-radius': 5,
+        //     'circle-fill-color': 'rgba(255, 0, 0, 0.6)',
+        //     'circle-stroke-width': 1,
+        //     'circle-stroke-color': '#319FD3',
+        //   },
+        style: new Style({
+            fill: new Fill({
+                color: color // Set color dynamically
+            }),
+            stroke: new Stroke({
+                color: '#319FD3',
+                width: 1
+            }),
+            image: new Circle({
+                radius: 5,
+                fill: new Fill({
+                    color: color // Set color dynamically
+                }),
+                stroke: new Stroke({
+                    color: '#319FD3',
+                    width: 1
+                })
+            })
+        })
     });
     map.addLayer(vectorLayer);
     console.log("added successfully");
