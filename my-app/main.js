@@ -1,17 +1,12 @@
+
 import Map from 'ol/Map.js';
 import View from 'ol/View.js';
-import {
-    DragAndDrop,
-    defaults as defaultInteractions,
-} from 'ol/interaction.js';
 import ImageLayer from 'ol/layer/Image';
-import { GPX, GeoJSON, IGC, KML, TopoJSON } from 'ol/format.js';
+import {GeoJSON, KML } from 'ol/format.js';
 import { ImageStatic, OSM, Vector as VectorSource } from 'ol/source.js';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
-import Static from 'ol/source/ImageStatic.js';
 import JSZip from 'jszip';
-import DataTile from 'ol/DataTile';
-// import JSZip from 'jszip';
+import MousePosition from 'ol/control/MousePosition.js';
 const zip = new JSZip();
  
 let main_kml = undefined
@@ -59,12 +54,18 @@ class KMZ extends KML {
     readFeatures(source, options) {
         const kmlData = getKMLData(source);
         parseKML(kmlData);
-        // kmlData.then(data => parseKML(data, event.file.name)).catch(error => console.error('Error parsing KML:', error));
- 
         return super.readFeatures(kmlData, options);
     }
 }
  
+
+const mousePositionControl = new MousePosition({
+    projection: 'EPSG:4326',
+    className: 'custom-mouse-position',
+    target: document.getElementById('mouse-position'),
+  })
+
+
 const fileInput = document.getElementById('fileInput');
 const map = new Map({
     target: 'map',
@@ -185,7 +186,6 @@ function sendDataToServer(main_csv) {
     const formData = new FormData();
     var post_data = {}
     formData.append('csvData', main_csv);
-    // formData.append('xmldata', main_kml);
     formData.forEach(function (value, key) {
         post_data[key] = value;
     });
@@ -203,11 +203,13 @@ function sendDataToServer(main_csv) {
             throw new Error('Failed to send data to server');
         })
         .then(data => {
-            const { point, line, buffer } = data;
+            const { ais_point,point, line, buffer,ship_point } = data;
             // Call functions to handle each JSON object as needed
-            overlayJson(point);
-            overlayJson(line);
-            overlayJson(buffer);
+            overlayJson(ais_point); //Blue
+            overlayJson(point);  //Green
+            // overlayJson(line); 
+            // overlayJson(buffer); 
+            overlayJson(ship_point) //Red
         })
     .catch(error => {
         console.error('Error:', error);
@@ -320,4 +322,3 @@ const infoElement = document.getElementById('aisInfo');
           
             return table;
           }
-
