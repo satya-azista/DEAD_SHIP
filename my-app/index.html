@@ -16,10 +16,12 @@
         body {
             background-color: rgb(14, 13, 13);
         }
+ 
         .container {
             width: 100%;
             /* height: 90vh; */
         }
+ 
         .navbar {
             background-color: #585858;
             margin-bottom: 0;
@@ -27,18 +29,23 @@
             display: flex;
             justify-content: space-evenly;
             align-items: center;
+            padding: 10px;
         }
+ 
         .navbar-nav {
             text-align: center;
         }
+ 
         .navbar-nav>li {
             display: inline-block;
             float: none;
             padding: 1px 10px;
         }
+ 
         .row.content {
             height: 450px
         }
+ 
         .buttonKmz,
         .buttonCsv,
         .button {
@@ -48,17 +55,20 @@
             border-radius: 2px;
             margin-top: 2px;
         }
+ 
         .sidenav {
             padding-top: 20px;
             background-color: #585858;
             height: 100vh;
             margin-top: 5px;
         }
+ 
         @media screen and (max-width: 767px) {
             .sidenav {
                 padding: 15px;
             }
         }
+ 
         #aisInfo {
             border: 1px solid #ccc;
             border-radius: 3px;
@@ -68,9 +78,11 @@
             font-size: 10px;
             font-weight: bold;
         }
+ 
         #aisInfo table {
             width: 100%;
         }
+ 
         #aisInfo table tr {
             border-bottom: 1px solid #ddd;
         }
@@ -78,10 +90,12 @@
         #aisInfo table tr:last-child {
             border-bottom: none;
         }
+ 
         #aisInfo table td {
             padding: 4px;
             vertical-align: top;
         }
+ 
         #aisInfo table td:first-child {
             font-weight: bold;
             width: 50%;
@@ -92,17 +106,20 @@
             color: white;
             padding: 5px;
         }
+ 
         .kmlData {
-            height: 40vh;
-            border: 1px solid #ccc;
+            height: 45vh;
+            border: 1px solid #fefffe;
             color: white;
             margin-bottom: 15px;
         }
+ 
         .csvData {
-            height: 40vh;
-            border: 1px solid #ccc;
+            height: 45vh;
+            border: 1px solid #ffffff;
             color: white;
         }
+ 
         #map {
             margin-top: 10px;
             width: 100%;
@@ -110,26 +127,43 @@
             border: 2px solid;
             /* margin-top: 100px; */
         }
-        #table-container
-        {
-            max-height: 300px; /* Adjust the height as needed */
-    overflow: auto;
+ 
+        #table-container {
+            max-height: 300px;
+            /* Adjust the height as needed */
+            overflow: auto;
         }
+ 
         table {
-        border-collapse: collapse;
-        width: 100%;
+            border-collapse: collapse;
+            width: 100%;
         }
-
-        table, th, td {
-        border: 1px solid rgb(240, 233, 233);
-        padding: 8px;
-        color: white;
+ 
+        table,
+        th,
+        td {
+            border: 1px solid rgb(240, 233, 233);
+            padding: 8px;
+            color: white;
         }
-
+ 
         th {
-            position:sticky;
-            top:0;
-        background-color: #282c76;
+            position: sticky;
+            top: 0;
+            background-color: #2dccc4;
+        }
+ 
+        #mouse-position {
+            color: white;
+        }
+ 
+        #csvHeading ,
+        #kmlHeading {
+            /* border: 2px solid rgb(135, 150, 165); */
+            padding: 3px;
+            margin-top: 0px;
+            background-color: #6e9b9b;
+            color: white;
         }
     </style>
 </head>
@@ -146,11 +180,11 @@
                         <li><label for="csv_Input" class="buttonCsv">Add CSV FILE</label></li>
                         <li><button class="button">Add AIS</button></li>
                         <li><button class="button">Edit Data</button></li>
-                        <li><button class="button">Measure Length</button></li>
+                        <li><button class="button" id="measureLength">Measure Length</button></li>
                         <li><button class="button">Get Coordinates</button></li>
                         <li><button class="button">Correlate AIS</button></li>
                         <li><button class="button">Verify AIS</button></li>
-                        <li><a href="#"><span class="glyphicon glyphicon-log-in"></span></a></li>
+                        <li><img src="../april_logo.png" alt="april_logo" width="20px" height="28px"></li>
                     </ul>
                 </div>
  
@@ -162,21 +196,25 @@
                 <div class="col-sm-3 sidenav">
                     <div class="leftContainer">
                         <div class="kmlData">
-                            Kml Data
+                            <h5 id="kmlHeading">KML Data</h5>
+                            <div id="kmlImg">
+ 
+                            </div>
                         </div>
                         <div class="csvData">
-                            CSV data
+                            <h5 id="csvHeading">CSV data</h5>
                         </div>
                     </div>
                 </div>
                 <div class="col-sm-6 text-left">
-                    <div id="map" style="height: 500px; width: 100%;"></div>
+                    <div id="map" style="height: 60vh; width: 100%;"></div>
+                    <div id="mouse-position"></div>
                     <div id="table-container"></div>
                 </div>
                 <div class="col-sm-3 sidenav">
                     <div class="rightContainer">
                         <h6 id="aisAttributes" style="margin-top: 0;">AIS Attributes</h6>
-                        <img src="./image.jpeg" alt="ship" height="150px" width="300px">
+                        <img src="./ais.jpg" alt="ship" height="150px" width="300vw">
                         <div id="aisInfo"></div>
                     </div>
                 </div>
