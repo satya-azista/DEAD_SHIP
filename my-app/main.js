@@ -2,17 +2,17 @@
 import Map from 'ol/Map.js';
 import View from 'ol/View.js';
 import ImageLayer from 'ol/layer/Image';
-import {GeoJSON, KML } from 'ol/format.js';
+import { GeoJSON, KML } from 'ol/format.js';
 import { ImageStatic, OSM, Vector as VectorSource } from 'ol/source.js';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
 import JSZip from 'jszip';
 import MousePosition from 'ol/control/MousePosition.js';
 import { Style, Fill, Stroke, Circle } from 'ol/style';
 const zip = new JSZip();
- 
+
 let main_kml = undefined
 let main_csv = undefined
- 
+
 function getKMLData(buffer) {
     let kmlData;
     zip.load(buffer);
@@ -22,49 +22,49 @@ function getKMLData(buffer) {
     }
     return kmlData;
 }
- 
+
 function getKMLImage(href) {
     const index = window.location.href.lastIndexOf('/');
     if (index !== -1) {
         const kmlFile = zip.file(href.slice(index + 1));
         if (kmlFile) {
- 
+
             return URL.createObjectURL(new Blob([kmlFile.asArrayBuffer()]));
- 
+
         }
     }
     return href;
 }
- 
+
 class KMZ extends KML {
     constructor(opt_options) {
         const options = opt_options || {};
         options.iconUrlFunction = getKMLImage;
         super(options);
     }
- 
+
     getType() {
         return 'arraybuffer';
     }
- 
+
     readFeature(source, options) {
         const kmlData = getKMLData(source);
         return super.readFeature(kmlData, options);
     }
- 
+
     readFeatures(source, options) {
         const kmlData = getKMLData(source);
         parseKML(kmlData);
         return super.readFeatures(kmlData, options);
     }
 }
- 
+
 
 const mousePositionControl = new MousePosition({
     projection: 'EPSG:4326',
     className: 'custom-mouse-position',
     target: document.getElementById('mouse-position'),
-  })
+})
 
 
 const fileInput = document.getElementById('fileInput');
@@ -81,23 +81,20 @@ const map = new Map({
     }),
 });
 const csv_Input = document.getElementById('csv_Input');
-csv_Input.addEventListener('change', function (event) 
-{
+csv_Input.addEventListener('change', function (event) {
     const file = event.target.files[0];
     const reader = new FileReader();
-    reader.onload = function(event) {
+    reader.onload = function (event) {
         const csv = event.target.result;
-        let desiredColumns=['ID_IMO','VESSEL_NAME','AIS_TYPEANDCARGO','VOYAGE_DESTINATION','VOYAGE_ETA']
-        const parsedData = parseCSV(csv,desiredColumns);
+        const parsedData = parseCSV(csv);
         const table = createTable(parsedData);
-        
         const tableContainer = document.getElementById('table-container');
         tableContainer.innerHTML = ''; // Clear previous table
         tableContainer.appendChild(table);
-    };   
+    };
     reader.readAsText(file);
     sendDataToServer(file)
-
+ 
 })
 fileInput.addEventListener('change', function (event) {
     const files = event.target.files;
@@ -114,6 +111,7 @@ fileInput.addEventListener('change', function (event) {
             });
         };
         reader.readAsArrayBuffer(file);
+
     }
 });
 function parseKML(kmlData) {
@@ -123,7 +121,7 @@ function parseKML(kmlData) {
         const parser = new DOMParser();
         const kmlDoc = parser.parseFromString(kmlData, 'text/xml');
         const groundOverlays = kmlDoc.querySelectorAll('GroundOverlay');
- 
+
         groundOverlays.forEach(groundOverlay => {
             const imageUrl = groundOverlay.querySelector('Icon href').textContent;
             const latLonBox = groundOverlay.querySelector('LatLonBox');
@@ -131,7 +129,7 @@ function parseKML(kmlData) {
             const south = parseFloat(latLonBox.querySelector('south').textContent);
             const east = parseFloat(latLonBox.querySelector('east').textContent);
             const west = parseFloat(latLonBox.querySelector('west').textContent);
- 
+
             addImageOverlayFromHref(imageUrl, west, south, east, north);
         });
         const vectorSource = new VectorSource({
@@ -143,7 +141,7 @@ function parseKML(kmlData) {
         const vectorLayer = new VectorLayer({
             source: vectorSource
         });
-        // map.addLayer(vectorLayer);
+        map.addLayer(vectorLayer);
     } catch (error) {
         console.error('Error parsing KML and adding image overlay:', error);
     }
@@ -204,19 +202,19 @@ function sendDataToServer(main_csv) {
             throw new Error('Failed to send data to server');
         })
         .then(data => {
-            const { ais_point,point, line, buffer,ship_point } = data;
+            const { ais_point, point, line, buffer, ship_point } = data;
             // Call functions to handle each JSON object as needed
-            overlayJson(ais_point,'blue'); //Blue
-            overlayJson(ship_point,'red') //Red
-            overlayJson(point,'green');  //Green
+            overlayJson(buffer, 'skyblue');
+            overlayJson(ais_point, 'blue'); //Blue
+            overlayJson(ship_point, 'red') //Red
+            overlayJson(point, 'green');  //Green
             // overlayJson(line); 
-            // overlayJson(buffer); 
         })
-    .catch(error => {
-        console.error('Error:', error);
-    });
+        .catch(error => {
+            console.error('Error:', error);
+        });
 }
-function overlayJson(featureData,color) {
+function overlayJson(featureData, color) {
     const vectorSourceJson = new VectorSource({
         features: new GeoJSON().readFeatures(featureData, {
             featureProjection: 'EPSG:3857' // Assuming your map is in EPSG:3857
@@ -224,15 +222,7 @@ function overlayJson(featureData,color) {
     });
     const vectorLayer = new VectorLayer({
         source: vectorSourceJson,
-        // style: {
-        //     'fill-color': 'rgba(255, 0, 0, 0.6)',
-        //     'stroke-width': 1,
-        //     'stroke-color': '#319FD3',
-        //     'circle-radius': 5,
-        //     'circle-fill-color': 'rgba(255, 0, 0, 0.6)',
-        //     'circle-stroke-width': 1,
-        //     'circle-stroke-color': '#319FD3',
-        //   },
+
         style: new Style({
             fill: new Fill({
                 color: color // Set color dynamically
@@ -257,7 +247,7 @@ function overlayJson(featureData,color) {
     console.log("added successfully");
 }
 function sendForImages(file) {
- 
+
     fetch('http://127.0.0.1:5000/images', {
         method: 'POST',
         body: file,
@@ -276,78 +266,78 @@ function sendForImages(file) {
         });
 }
 const infoElement = document.getElementById('aisInfo');
- 
-        map.on('click', function (evt) {
-            const pixel = map.getEventPixel(evt.originalEvent);
-            const feature = map.forEachFeatureAtPixel(pixel, function (feature) {
-                return feature;
-            });
-            if (feature) {
-                const properties = feature.getProperties();
-                let info = '<table>';
-                Object.keys(properties).forEach(key => {
-                    info += `<tr><td>${key}</td><td>${properties[key]}</td></tr>`;
-                });
-                info += '</table>';
-                infoElement.innerHTML = info;
-            } else {
-                infoElement.innerHTML = '';
-            }
-        });
- 
 
-        function parseCSV(csv, desiredColumns) {
-            const lines = csv.split('\n');
-            const data = [];
-            let headers = [];
-            let headerFound = false;
-          
-            for (let i = 0; i < lines.length; i++) {
-              const values = lines[i].split(',');
-              if (!headerFound) {
-                // Find the header row
-                headers = values.map(value => value.trim());
-                headerFound = true;
-              } else if (values.length === headers.length) {
-                // Process data rows
-                const obj = {};
-                for (let j = 0; j < headers.length; j++) {
-                  if (desiredColumns.includes(headers[j])) {
-                    obj[headers[j]] = values[j];
-                  }
-                }
-                data.push(obj);
-              }
+map.on('click', function (evt) {
+    const pixel = map.getEventPixel(evt.originalEvent);
+    const feature = map.forEachFeatureAtPixel(pixel, function (feature) {
+        return feature;
+    });
+    if (feature) {
+        const properties = feature.getProperties();
+        let info = '<table>';
+        Object.keys(properties).forEach(key => {
+            info += `<tr><td>${key}</td><td>${properties[key]}</td></tr>`;
+        });
+        info += '</table>';
+        infoElement.innerHTML = info;
+    } else {
+        infoElement.innerHTML = '';
+    }
+});
+
+
+function parseCSV(csv) {
+    const lines = csv.split('\n');
+    const data = [];
+    let headers = [];
+    let headerFound = false;
+ 
+    for (let i = 0; i < lines.length; i++) {
+        const values = lines[i].split(',');
+        if (!headerFound) {
+            // Find the header row
+            headers = values.map(value => value.trim());
+            headerFound = true;
+        } else if (values.length === headers.length) {
+            // Process data rows
+            const obj = {};
+            for (let j = 0; j < headers.length; j++) {
+ 
+                obj[headers[j]] = values[j];
+ 
             }
-            return data;
-          }
-          // Function to create HTML table
-          function createTable(data) {
-            const table = document.createElement('table');
-            
-            // Create table header
-            const thead = document.createElement('thead');
-            const headerRow = document.createElement('tr');
-            for (const key in data[0]) {
-              const th = document.createElement('th');
-              th.textContent = key;
-              headerRow.appendChild(th);
-            }
-            thead.appendChild(headerRow);
-            table.appendChild(thead);
-          
-            // Create table body
-            const tbody = document.createElement('tbody');
-            data.forEach(rowData => {
-              const row = document.createElement('tr');
-              for (const key in rowData) {
-                const cell = document.createElement('td');
-                cell.textContent = rowData[key];
-                row.appendChild(cell);
-              }
-              tbody.appendChild(row);
-            });
-            table.appendChild(tbody);
-          
-            return table;
-          }
+            data.push(obj);
+        }
+    }
+    return data;
+}
+// Function to create HTML table
+function createTable(data) {
+    const table = document.createElement('table');
+
+    // Create table header
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    for (const key in data[0]) {
+        const th = document.createElement('th');
+        th.textContent = key;
+        headerRow.appendChild(th);
+    }
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    // Create table body
+    const tbody = document.createElement('tbody');
+    data.forEach(rowData => {
+        const row = document.createElement('tr');
+        for (const key in rowData) {
+            const cell = document.createElement('td');
+            cell.textContent = rowData[key];
+            row.appendChild(cell);
+        }
+        tbody.appendChild(row);
+    });
+    table.appendChild(tbody);
+
+    return table;
+}
