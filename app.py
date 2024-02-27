@@ -280,9 +280,9 @@ def process_csv():
                 pass
             else:
                 nearest_point=a[0]
-                nearest_dist,_=haversine(a[0].x,buffer_dict[row.geometry].x,a[0].y,buffer_dict[row.geometry].y)
+                nearest_dist,_=haversine(a[0].x,a[0].y,buffer_dict[row.geometry].x,buffer_dict[row.geometry].y)
                 for ship in a:
-                    dist,_=haversine(ship.x,buffer_dict[row.geometry].x,ship.y,buffer_dict[row.geometry].y)
+                    dist,_=haversine(ship.x,ship.y,buffer_dict[row.geometry].x,buffer_dict[row.geometry].y)
                     if dist < nearest_dist:
                         nearest_dist=dist
                         nearest_point=ship
