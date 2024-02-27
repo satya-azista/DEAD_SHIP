@@ -263,9 +263,8 @@ def process_csv():
         for cord in gdf['geometry']:
             # check=Point(cord.x,cord.y)
             total_ship_list.append(cord)
-        dead_ship=[]
-        for pol in buffer_geom:
-            polygon = Polygon(pol)
+        for row in buffer.itertuples(index=False):
+            polygon = Polygon(row.geometry)
             a=[]
             for iter in total_ship_list:
                 point_to_check = Point(iter.x,iter.y)  # Example point coordinates
@@ -274,32 +273,47 @@ def process_csv():
                     a.append(point_to_check)
             if len(a)==1:
                 ship_list.append(a[0])
+                point_3d = Point(a[0].x, a[0].y, 0.00000)
+                index=gdf[gdf['geometry']==point_3d].index[0]
+                gdf.at[index,'AIS_Correlation']=row.IMO
             elif len(a)==0:
                 pass
             else:
                 nearest_point=a[0]
-                nearest_dist,_=haversine(a[0].x,buffer_dict[pol].x,a[0].y,buffer_dict[pol].y)
+                nearest_dist,_=haversine(a[0].x,buffer_dict[row.geometry].x,a[0].y,buffer_dict[row.geometry].y)
                 for ship in a:
-                    dist,_=haversine(ship.x,buffer_dict[pol].x,ship.y,buffer_dict[pol].y)
+                    dist,_=haversine(ship.x,buffer_dict[row.geometry].x,ship.y,buffer_dict[row.geometry].y)
                     if dist < nearest_dist:
                         nearest_dist=dist
                         nearest_point=ship
                 ship_list.append(nearest_point)
-        ship_list_gdf = gpd.GeoDataFrame(geometry=ship_list)
-        # for iter in total_ship_list:
-        #     point_to_check = Point(iter.x,iter.y)  # Example point coordinates
-        #     iter=point_to_check
-        json_total_ship_point=gpd.GeoDataFrame(geometry=total_ship_list)
-        print(len(ship_list_gdf))
-        print(len(total_ship_list))
+                point_3d = Point(nearest_point.x, nearest_point.y, 0.00000)
+                index=gdf[gdf['geometry']==point_3d].index[0]
+                gdf.at[index,'AIS_Correlation']=row.IMO
+        ship_list_gdf = gpd.GeoDataFrame(columns= ['IMO','geometry'],crs='EPSG:4326')
+        ship_list_gdf.geometry=ship_list
+
+
+        ship_list_gdf_index=0
+        for row in ship_list_gdf.itertuples(index=False):
+            point_3d = Point(row.geometry.x, row.geometry.y, 0.00000)
+            ship_list_gdf.loc[ship_list_gdf_index,'geometry']=point_3d
+            index=gdf[gdf['geometry']==point_3d].index[0]
+            ship_list_gdf.loc[ship_list_gdf_index,'IMO']=gdf.at[index,'AIS_Correlation']
+            ship_list_gdf_index+=1
+
+        total_ship_point_gdf = gpd.GeoDataFrame(columns= ['IMO','geometry'],crs='EPSG:4326')
+        total_ship_point_gdf.geometry=total_ship_list
+
+        
         json_ship_list_point=ship_list_gdf.to_json()
-        json_total_ship=json_total_ship_point.to_json()
+        json_total_ship_point=total_ship_point_gdf.to_json()
         combined_json = {
         "ais_point":json_point,
         "point": json_ship_list_point,
         "line": json_line,
         "buffer": json_buffer,
-        "ship_point":json_total_ship
+        "ship_point":json_total_ship_point
         }
     # Return the combined JSON object
     return jsonify(combined_json)
