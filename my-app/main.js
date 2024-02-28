@@ -65,9 +65,6 @@ const mousePositionControl = new MousePosition({
     className: 'custom-mouse-position',
     target: document.getElementById('mouse-position'),
 })
-
-
-const fileInput = document.getElementById('fileInput');
 const map = new Map({
     target: 'map',
     layers: [
@@ -96,32 +93,102 @@ csv_Input.addEventListener('change', function (event) {
     sendDataToServer(file)
  
 })
+
+
+const kmlButtonContainer = document.getElementById('kmlButton')
+var kmlDataObject = {};
+let kmlLayerVisibility = {};
+const uploadedFiles = {};
+ 
+ 
+const fileInput = document.getElementById('fileInput');
 fileInput.addEventListener('change', function (event) {
     const files = event.target.files;
-    sendForImages(files[0])
+ 
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
+        const fileName = file.name;
+ 
+        // Check if the file with the same name has already been uploaded
+        if (uploadedFiles[fileName]) {
+            // console.log(`File '${fileName}' has already been uploaded.`);
+            continue; // Skip processing this file
+        }
+ 
         const reader = new FileReader();
         reader.onload = function (event) {
             const buffer = event.target.result;
             JSZip.loadAsync(buffer).then(function (zip) {
                 zip.file(/\.kml$/i)[0].async('text').then(function (kmlData) {
-                    parseKML(kmlData);
+                    createKMLButton(fileName, kmlData);
+                    uploadedFiles[fileName] = true; // Mark the file as uploaded
                 });
             });
         };
         reader.readAsArrayBuffer(file);
-
     }
 });
-function parseKML(kmlData) {
-    sendXmlDataToServer(kmlData)
-    main_kml = kmlData
+ 
+ 
+ 
+function createKMLButton(buttonName, kmlData) {
+    const buttonContainer = document.createElement('div'); // Container for the button and additional buttons
+    buttonContainer.style.width ='100%';
+    const button = document.createElement('button');
+    button.textContent = buttonName;
+    const viewButton = document.createElement('button');
+    viewButton.innerHTML = '&#128065;';
+    viewButton.style.backgroundColor = 'grey';
+    const closeButton = document.createElement('button');
+    closeButton.style.backgroundColor = 'red';
+    closeButton.textContent = 'X';
+    const br = document.createElement('br');
+    const buttonId = buttonName;
+    button.style.width = "150px";
+    button.style.overflow = "hidden";
+    button.style.textOverflow = "ellipsis";
+    button.style.whiteSpace = "nowrap";
+    button.style.backgroundColor = 'cadetblue';
+    button.style.marginBottom = '3px';
+    viewButton.style.marginLeft = '5px'; // Add some spacing between buttons
+    closeButton.style.marginLeft = '5px'; // Add some spacing between buttons
+ 
+    buttonContainer.appendChild(button);
+    buttonContainer.appendChild(viewButton);
+    buttonContainer.appendChild(closeButton);
+    buttonContainer.appendChild(br);
+ 
+    kmlButtonContainer.appendChild(buttonContainer);
+ 
+    viewButton.addEventListener('click', function () {
+        parseKML(kmlData, buttonId);
+    });
+ 
+    closeButton.addEventListener('click', function () {
+        delete kmlDataObject[buttonId];
+        const layerToRemove = kmlLayerVisibility[buttonId];
+        if (layerToRemove) {
+            map.removeLayer(layerToRemove);
+            delete kmlLayerVisibility[buttonId];
+        }
+    });
+ 
+    // Store the KML data in an object to associate it with the button
+    kmlDataObject[buttonId] = kmlData;
+    kmlLayerVisibility[buttonId] = false;
+}
+ 
+ 
+ 
+ 
+function parseKML(kmlData, buttonId) {
+    // sendXmlDataToServer(kmlData);
+    main_kml = kmlData;
+    sendXmlDataToServer(main_kml);
     try {
         const parser = new DOMParser();
         const kmlDoc = parser.parseFromString(kmlData, 'text/xml');
         const groundOverlays = kmlDoc.querySelectorAll('GroundOverlay');
-
         groundOverlays.forEach(groundOverlay => {
             const imageUrl = groundOverlay.querySelector('Icon href').textContent;
             const latLonBox = groundOverlay.querySelector('LatLonBox');
@@ -129,23 +196,36 @@ function parseKML(kmlData) {
             const south = parseFloat(latLonBox.querySelector('south').textContent);
             const east = parseFloat(latLonBox.querySelector('east').textContent);
             const west = parseFloat(latLonBox.querySelector('west').textContent);
-
             addImageOverlayFromHref(imageUrl, west, south, east, north);
         });
+ 
+        for (const layerId in kmlLayerVisibility) {
+            if (kmlLayerVisibility[layerId] && layerId !== buttonId) {
+                map.removeLayer(kmlLayerVisibility[layerId]);
+                kmlLayerVisibility[layerId] = null;
+            }
+        }
         const vectorSource = new VectorSource({
             features: new KML().readFeatures(kmlData, {
-                dataProjection: 'EPSG:4326',  // Projection of the KML data
-                featureProjection: 'EPSG:3857'  // Projection for the features
+                dataProjection: 'EPSG:4326',
+                featureProjection: 'EPSG:3857'
             })
         });
         const vectorLayer = new VectorLayer({
             source: vectorSource
         });
-        map.addLayer(vectorLayer);
+        if (!kmlLayerVisibility[buttonId]) {
+            map.addLayer(vectorLayer);
+            kmlLayerVisibility[buttonId] = vectorLayer;
+        }
+ 
     } catch (error) {
         console.error('Error parsing KML and adding image overlay:', error);
     }
 }
+
+
+
 function addImageOverlayFromHref(href, west, south, east, north) {
     const url = "./";
     const newPath = url + href;
@@ -407,25 +487,172 @@ function movePopup(event) {
     popup.style.top = newY + 'px';
 }
 
-function csvToTable(csvData) {
-var tableContainer = document.getElementById('popup_content');
+// function csvToTable(csvData) {
+// var tableContainer = document.getElementById('popup_content');
 
-var lines = csvData.trim().split('\n'); // Trim to remove leading/trailing whitespace
-var tableHTML = '<table>';
-for (var i = 0; i < lines.length; i++) {
-    var cells = lines[i].split(',');
-    tableHTML += '<tr>';
-    for (var j = 0; j < cells.length; j++) {
-        if (j === 2) { // Check if the current cell is in the third column (index 2)
+// var lines = csvData.trim().split('\n'); // Trim to remove leading/trailing whitespace
+// var tableHTML = '<table>';
+// for (var i = 0; i < lines.length; i++) {
+//     var cells = lines[i].split(',');
+//     tableHTML += '<tr>';
+//     for (var j = 0; j < cells.length; j++) {
+//         if (j === 2) { // Check if the current cell is in the third column (index 2)
+//             var cellContent = cells[j].trim();
+//             var cellStyle = (cellContent === 'YES') ? 'green' : (cellContent === 'NO') ? 'red' : ''; // Ternary operator to set style
+//             tableHTML += '<td class="correlation-cell" style="background-color: ' + cellStyle + ';">' + cellContent + '</td>';
+//         } else {
+//             tableHTML += '<td>' + cells[j] + '</td>';
+//         }
+//     }
+//     tableHTML += '</tr>';
+// }
+// tableHTML += '</table>';
+// tableContainer.innerHTML = tableHTML;
+// }
+
+
+// function csvToTable(csvData) {
+//     var tableContainer = document.getElementById('popup_content');
+
+//     var lines = csvData.trim().split('\n'); // Trim to remove leading/trailing whitespace
+//     var tableHTML = '<table>';
+//     for (var i = 0; i < lines.length; i++) {
+//         var cells = lines[i].split(',');
+//         tableHTML += '<tr>';
+//         for (var j = 0; j < cells.length; j++) {
+//             if (j === 2) { // Check if the current cell is in the third column (index 2)
+//                 var cellContent = cells[j].trim();
+//                 var cellStyle = (cellContent === 'YES') ? 'green' : (cellContent === 'NO') ? 'red' : ''; // Ternary operator to set style
+//                 tableHTML += '<td class="correlation-cell" style="background-color: ' + cellStyle + ';">' + cellContent + '</td>';
+//             } else {
+//                 tableHTML += '<td>' + cells[j] + '</td>';
+//             }
+//         }
+//         // Add Edit and Save buttons to each row
+//         tableHTML += '<td><button class="edit-button">Edit</button></td>';
+//         tableHTML += '<td><button class="save-button">Save</button></td>';
+//         tableHTML += '</tr>';
+//     }
+//     tableHTML += '</table>';
+//     tableContainer.innerHTML = tableHTML;
+
+//     // Add event listeners for Edit and Save buttons
+//     var editButtons = document.querySelectorAll('.edit-button');
+//     var saveButtons = document.querySelectorAll('.save-button');
+
+//     editButtons.forEach(function(button) {
+//         button.addEventListener('click', function(event) {
+//             var row = event.target.closest('tr');
+//             enableEdit(row);
+//         });
+//     });
+
+//     saveButtons.forEach(function(button) {
+//         button.addEventListener('click', function(event) {
+//             var row = event.target.closest('tr');
+//             saveRow(row);
+//         });
+//     });
+// }
+
+// // Enable editing of the row
+// function enableEdit(row) {
+//     row.querySelectorAll('td').forEach(function(cell) {
+//         cell.contentEditable = true;
+//         cell.style.backgroundColor = 'lightyellow';
+//     });
+// }
+
+// // Save the edited row
+// function saveRow(row) {
+//     var cells = row.querySelectorAll('td');
+//     var rowData = Array.from(cells).map(function(cell) {
+//         return cell.textContent.trim();
+//     });
+//     var newRow = rowData.join(',');
+//     // You can save the edited row data here (e.g., as CSV)
+//     console.log('Edited row data:', newRow);
+// }
+
+// document.getElementById("edit_button").addEventListener("click", function() {
+//     enableEdit();
+// });
+
+// // Add event listener to the "Save" button
+// document.getElementById("save_button").addEventListener("click", function() {
+//     saveTable();
+// });
+
+// // Enable editing of the table
+// function enableEdit() {
+//     var cells = document.querySelectorAll('#popup_content td');
+//     cells.forEach(function(cell) {
+//         cell.contentEditable = true;
+//         cell.style.backgroundColor = 'lightyellow';
+//     });
+// }
+
+// // Save the table data
+// function saveTable() {
+//     var rows = document.querySelectorAll('#popup_content tr');
+//     var csvContent = [];
+//     rows.forEach(function(row) {
+//         var rowData = [];
+//         var cells = row.querySelectorAll('td');
+//         cells.forEach(function(cell) {
+//             rowData.push(cell.textContent.trim());
+//         });
+//         csvContent.push(rowData.join(','));
+//     });
+//     var csvData = csvContent.join('\n');
+//     // You can save the table data here (e.g., as CSV)
+//     console.log('Table data:', csvData);
+// }
+
+function csvToTable(csvData) {
+    var tableContainer = document.getElementById('popup_content');
+    var lines = csvData.trim().split('\n'); // Trim to remove leading/trailing whitespace
+    var tableHTML = '<table>';
+
+    for (var i = 0; i < lines.length; i++) {
+        var cells = lines[i].split(',');
+        tableHTML += '<tr>';
+
+        for (var j = 0; j < cells.length; j++) {
             var cellContent = cells[j].trim();
-            var cellStyle = (cellContent === 'YES') ? 'green' : (cellContent === 'NO') ? 'red' : ''; // Ternary operator to set style
-            tableHTML += '<td class="correlation-cell" style="background-color: ' + cellStyle + ';">' + cellContent + '</td>';
-        } else {
-            tableHTML += '<td>' + cells[j] + '</td>';
+            var cellStyle = '';
+
+            if (j === 2) { // Check if the current cell is in the third column (index 2)
+                cellStyle = (cellContent === 'YES') ? 'background-color: green;' : (cellContent === 'NO') ? 'background-color: red;' : '';
+            }
+
+            tableHTML += '<td style="' + cellStyle + '">' + cellContent + '</td>';
         }
+
+        // Add Edit and Save buttons to each row
+        tableHTML += '<td><button class="edit-button">Edit</button></td>';
+        tableHTML += '<td><button class="save-button">Save</button></td>';
+        tableHTML += '</tr>';
     }
-    tableHTML += '</tr>';
-}
-tableHTML += '</table>';
-tableContainer.innerHTML = tableHTML;
+
+    tableHTML += '</table>';
+    tableContainer.innerHTML = tableHTML;
+
+    // Add event listeners for Edit and Save buttons
+    var editButtons = document.querySelectorAll('.edit-button');
+    var saveButtons = document.querySelectorAll('.save-button');
+
+    editButtons.forEach(function(button) {
+        button.addEventListener('click', function(event) {
+            var row = event.target.closest('tr');
+            enableEdit(row);
+        });
+    });
+
+    saveButtons.forEach(function(button) {
+        button.addEventListener('click', function(event) {
+            var row = event.target.closest('tr');
+            saveRow(row);
+        });
+    });
 }
