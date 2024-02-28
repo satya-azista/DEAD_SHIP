@@ -189,10 +189,14 @@
     background-color: #535bff;
     color: white;
     border-bottom: 1px solid #ccc;
+    position: sticky;
 }
 
 .popup-header h2 {
     margin: 0;
+    position: sticky;
+    
+
 }
 
 .popup-content {
@@ -239,7 +243,7 @@
                         <li><button class="button">Get Coordinates</button></li>
                         <li><button class="button">Correlate AIS</button></li>
                         <li><button class="button" id="verify_ais_table">Verify AIS</button></li>
-                        <li><img src="../april_logo.png" alt="april_logo" width="20px" height="28px"></li>
+                        <li><img src="./april_logo.png" alt="april_logo" width="20px" height="28px"></li>
                     </ul>
                 </div>
  
@@ -249,11 +253,22 @@
         <div class="container-fluid text-center">
             <div class="row content">
                 <div class="col-sm-3 sidenav">
-                    <div class="leftContainer">
+                    <!-- <div class="leftContainer">
                         <div class="kmlData">
                             <h5 id="kmlHeading">KML Data</h5>
                             <div id="kmlImg">
  
+                            </div>
+                        </div>
+                        <div class="csvData">
+                            <h5 id="csvHeading">CSV data</h5>
+                        </div>
+                    </div> -->
+                    <div class="leftContainer">
+                        <div class="kmlData">
+                            <h5 id="kmlHeading">KML Data</h5>
+                            <div id="kmlDataAll">
+                                <div id="kmlButton"></div>
                             </div>
                         </div>
                         <div class="csvData">
@@ -279,6 +294,8 @@
     <div id="popup" class="popup">
         <div class="popup-header">
             <h2>Verify AIS</h2>
+            <span id="edit_button" class="button">Edit</span>
+            <span id="save_button" class="button">Save</span>
             <span id="close_button" class="close">×</span>
         </div>
         <div id="popup_content" class="popup-content">
