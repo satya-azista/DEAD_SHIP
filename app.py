@@ -308,12 +308,25 @@ def process_csv():
         
         json_ship_list_point=ship_list_gdf.to_json()
         json_total_ship_point=total_ship_point_gdf.to_json()
+
+        verify_ais=gpd.GeoDataFrame(columns= ['Image','Number','CORELATION','AIS'])
+        verify_ais.Number=gdf.Name
+        verify_ais.AIS=gdf.AIS_Correlation
+        for index, row in verify_ais.iterrows():
+            if row['AIS'] == 'NA':
+                verify_ais.at[index, 'CORELATION'] = 'NO'
+            else:
+                verify_ais.at[index, 'CORELATION'] = 'YES'
+
+        verify_ais_csv = verify_ais.to_csv(index=False)
+        # verify_ais_json=verify_ais.to_json()
         combined_json = {
         "ais_point":json_point,
         "point": json_ship_list_point,
         "line": json_line,
         "buffer": json_buffer,
-        "ship_point":json_total_ship_point
+        "ship_point":json_total_ship_point,
+        "verify_ais":verify_ais_csv
         }
     # Return the combined JSON object
     return jsonify(combined_json)
