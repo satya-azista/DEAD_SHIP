@@ -12,7 +12,7 @@ const zip = new JSZip();
 
 let main_kml = undefined
 let main_csv = undefined
-
+let verify_ais_csv=undefined
 function getKMLData(buffer) {
     let kmlData;
     zip.load(buffer);
@@ -202,13 +202,13 @@ function sendDataToServer(main_csv) {
             throw new Error('Failed to send data to server');
         })
         .then(data => {
-            const { ais_point, point, line, buffer, ship_point } = data;
+            const { ais_point, point, line, buffer, ship_point,verify_ais} = data;
             // Call functions to handle each JSON object as needed
             overlayJson(buffer, 'skyblue');
             overlayJson(ais_point, 'blue'); //Blue
             overlayJson(ship_point, 'red') //Red
             overlayJson(point, 'green');  //Green
-            // overlayJson(line); 
+            verify_ais_csv=verify_ais
         })
         .catch(error => {
             console.error('Error:', error);
@@ -341,3 +341,36 @@ function createTable(data) {
 
     return table;
 }
+
+
+function csvToTable(csvData) 
+{
+    var tableContainer = document.getElementById('popup_content');
+
+    var lines = csvData.trim().split('\n'); // Trim to remove leading/trailing whitespace
+    var tableHTML = '<table>';
+    for (var i = 0; i < lines.length; i++) {
+        var cells = lines[i].split(',');
+        tableHTML += '<tr>';
+        for (var j = 0; j < cells.length; j++) {
+            tableHTML += '<td>' + cells[j] + '</td>';
+        }
+        tableHTML += '</tr>';
+    }
+    tableHTML += '</table>';
+    tableContainer.innerHTML = tableHTML;
+
+        return tableHTML;
+    }
+    
+    
+    document.getElementById("verify_ais_table").addEventListener("click", function(){
+        document.getElementById("popup").style.display = "block";
+        csvToTable(verify_ais_csv);
+    });
+    
+    // Function to close the popup
+    document.getElementById("close_button").addEventListener("click", function(){
+        document.getElementById("popup").style.display = "none";
+    });
+   
