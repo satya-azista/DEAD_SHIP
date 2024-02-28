@@ -343,25 +343,25 @@ function createTable(data) {
 }
 
 
-function csvToTable(csvData) 
-{
-    var tableContainer = document.getElementById('popup_content');
+// function csvToTable(csvData) 
+// {
+//     var tableContainer = document.getElementById('popup_content');
 
-    var lines = csvData.trim().split('\n'); // Trim to remove leading/trailing whitespace
-    var tableHTML = '<table>';
-    for (var i = 0; i < lines.length; i++) {
-        var cells = lines[i].split(',');
-        tableHTML += '<tr>';
-        for (var j = 0; j < cells.length; j++) {
-            tableHTML += '<td>' + cells[j] + '</td>';
-        }
-        tableHTML += '</tr>';
-    }
-    tableHTML += '</table>';
-    tableContainer.innerHTML = tableHTML;
+//     var lines = csvData.trim().split('\n'); // Trim to remove leading/trailing whitespace
+//     var tableHTML = '<table>';
+//     for (var i = 0; i < lines.length; i++) {
+//         var cells = lines[i].split(',');
+//         tableHTML += '<tr>';
+//         for (var j = 0; j < cells.length; j++) {
+//             tableHTML += '<td>' + cells[j] + '</td>';
+//         }
+//         tableHTML += '</tr>';
+//     }
+//     tableHTML += '</table>';
+//     tableContainer.innerHTML = tableHTML;
 
-        return tableHTML;
-    }
+//         return tableHTML;
+//     }
     
     
     document.getElementById("verify_ais_table").addEventListener("click", function(){
@@ -373,4 +373,59 @@ function csvToTable(csvData)
     document.getElementById("close_button").addEventListener("click", function(){
         document.getElementById("popup").style.display = "none";
     });
-   
+
+
+    // Variables to store the mouse position and the popup element
+var offsetX, offsetY;
+var popup = document.getElementById('popup');
+
+// Function to handle mouse down event on the popup header
+document.querySelector('.popup-header').addEventListener('mousedown', function(event) {
+    // Get the initial mouse position relative to the popup's position
+    offsetX = event.clientX - popup.offsetLeft;
+    offsetY = event.clientY - popup.offsetTop;
+
+    // Add event listener for mouse move
+    document.addEventListener('mousemove', movePopup);
+
+    // Add event listener for mouse up
+    document.addEventListener('mouseup', function() {
+        // Remove event listeners for mouse move and mouse up
+        document.removeEventListener('mousemove', movePopup);
+        document.removeEventListener('mouseup', arguments.callee);
+    });
+});
+
+// Function to move the popup
+function movePopup(event) {
+    // Calculate the new position of the popup
+    var newX = event.clientX - offsetX;
+    var newY = event.clientY - offsetY;
+
+    // Set the new position of the popup
+    popup.style.left = newX + 'px';
+    popup.style.top = newY + 'px';
+}
+
+function csvToTable(csvData) {
+var tableContainer = document.getElementById('popup_content');
+
+var lines = csvData.trim().split('\n'); // Trim to remove leading/trailing whitespace
+var tableHTML = '<table>';
+for (var i = 0; i < lines.length; i++) {
+    var cells = lines[i].split(',');
+    tableHTML += '<tr>';
+    for (var j = 0; j < cells.length; j++) {
+        if (j === 2) { // Check if the current cell is in the third column (index 2)
+            var cellContent = cells[j].trim();
+            var cellStyle = (cellContent === 'YES') ? 'green' : (cellContent === 'NO') ? 'red' : ''; // Ternary operator to set style
+            tableHTML += '<td class="correlation-cell" style="background-color: ' + cellStyle + ';">' + cellContent + '</td>';
+        } else {
+            tableHTML += '<td>' + cells[j] + '</td>';
+        }
+    }
+    tableHTML += '</tr>';
+}
+tableHTML += '</table>';
+tableContainer.innerHTML = tableHTML;
+}
