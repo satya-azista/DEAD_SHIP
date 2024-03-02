@@ -2,7 +2,6 @@ import geopandas as gpd
 from shapely.geometry import Point, Polygon, LineString
 import pandas as pd
 import fiona
-fiona.drvsupport.supported_drivers['libkml'] = 'rw'
 import numpy as np
 import geopy
 from geopy import distance
@@ -13,7 +12,7 @@ from math import radians, degrees, cos, sin, asin, sqrt, atan2
 from statistics import mean 
 from shapely import wkt
 import math
-from flask import Flask, request, jsonify, session,current_app
+from flask import Flask, request, jsonify, session,current_app,render_template, request, redirect, url_for,send_file,make_response
 from flask_cors import CORS
 import io
 from io import BytesIO
@@ -25,6 +24,8 @@ import shutil
 import os
 import xml.etree.ElementTree as ET
 import requests
+import psycopg2
+from PIL import Image
 app = Flask(__name__)
 CORS(app, origins='*')
 AIStime=None
@@ -370,5 +371,71 @@ def meters_to_degrees(meters, latitude):
     # Convert distance to degrees
     degrees = meters * meters_to_degrees_conversion
     return degrees
+db_connection = {
+    "dbname": "main",
+    "user": "postgres",
+    "password": "12345678",
+    "host": "localhost",
+    "port":"5432"
+}
+
+# Function to save the image and IMO number to the database
+def save_to_database(imo, image_data):
+    conn = psycopg2.connect(**db_connection)
+    cur = conn.cursor()
+    cur.execute("INSERT INTO ship (imo, image_data) VALUES (%s, %s)", (imo, psycopg2.Binary(image_data)))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+@app.route("/", methods=["GET", "POST"])
+def index():
+    if request.method == "POST":
+        imo = request.form["imo"]
+        image = request.files["image"]
+
+        # Save the image to the database
+        if image.filename != '':
+            image_data = image.read()
+            save_to_database(imo, image_data)
+            return redirect(url_for("index"))
+
+    return render_template("index.html")
+def get_image_data_by_imo(imo_number):
+    conn = psycopg2.connect(**db_connection)
+    cur = conn.cursor()
+    cur.execute("SELECT image_data FROM ship WHERE imo = %s", (imo_number,))
+    image_data = cur.fetchone()
+    cur.close()
+    conn.close()
+    return image_data[0] if image_data else None
+
+@app.route('/get_image', methods=['POST'])
+def get_image():
+    data = request.data.decode('utf-8')  # Decode the bytes object to string
+    imo_number = json.loads(data)
+    # Retrieve image data from the database
+    image_data = get_image_data_by_imo(imo_number)
+    if image_data:
+        # Convert memoryview to bytes
+        image_bytes = bytes(image_data)
+        
+        # Open image from bytes
+        img = Image.open(io.BytesIO(image_bytes))
+        
+        # Resize image to 200x200
+        img_resized = img.resize((250, 200))
+        
+        # Create a response with the resized image data
+        with io.BytesIO() as output:
+            img_resized.save(output, format='JPEG')
+            response = make_response(output.getvalue())
+        
+        response.headers['Content-Type'] = 'image/jpeg'
+        return response
+    else:
+        return 'Image not found', 404
+
 if __name__ == '__main__':
     app.run(debug=True)
