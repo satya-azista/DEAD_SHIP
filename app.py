@@ -248,16 +248,48 @@ def get():
             point_3d = Point(nearest_point.x, nearest_point.y, 0.00000)
             index=gdf[gdf['geometry']==point_3d].index[0]
             gdf.at[index,'AIS_Correlation']=row.IMO
-    ship_list_gdf = gpd.GeoDataFrame(columns= ['IMO','geometry'],crs='EPSG:4326')
-    ship_list_gdf.geometry=ship_list
+    ship_list_gdf = gpd.GeoDataFrame(columns= ['IMO','geometry','KINEMATIC_POS_LLA_LAT','KINEMATIC_POS_LLA_LON','AIS_MMSI_COUNTRY', 'AIS_TYPEANDCARGO','AIS_NAVSTATUS', 'ID_CALLSIGN', 'VESSEL_NAME','VESSEL_DRAFT',  'VOYAGE_DESTINATION', 'VOYAGE_ETA'],crs='EPSG:4326')
+    # ship_list_gdf.geometry=ship_list
+    ship_list_gdf['geometry'] = ship_list
+
+    # Iterate over the rows of 'ship_list_gdf'
+    for idx, row in ship_list_gdf.iterrows():
+        point_3d = Point(row['geometry'].x, row['geometry'].y, 0.0)  # Convert 2D point to 3D
+        ship_list_gdf.at[idx, 'geometry'] = point_3d  # Update the 'geometry' column with the 3D point
+        
+        # Find the index of the row in 'gdf' where 'geometry' matches 'point_3d'
+        index = gdf[gdf['geometry'] == point_3d].index[0]
+        
+        # Get the corresponding 'AIS_Correlation' value from 'gdf' and assign it to 'IMO'
+        ship_list_gdf.at[idx, 'IMO'] = gdf.at[index, 'AIS_Correlation']
+        
+        # Get the corresponding 'KINEMATIC_POS_LLA_LAT' value from 'csv' and assign it
+        ship_imo = gdf.at[index, 'AIS_Correlation']  # Get the IMO number
+        csv_row = csv[csv['ID_IMO'] == ship_imo]  # Filter CSV by IMO number
+        if not csv_row.empty:
+            ship_list_gdf.at[idx, 'KINEMATIC_POS_LLA_LAT'] = csv_row.iloc[0]['KINEMATIC_POS_LLA_LAT']
+            ship_list_gdf.at[idx, 'KINEMATIC_POS_LLA_LON'] = csv_row.iloc[0]['KINEMATIC_POS_LLA_LON']
+            ship_list_gdf.at[idx, 'AIS_TYPEANDCARGO'] = csv_row.iloc[0]['AIS_TYPEANDCARGO']
+            ship_list_gdf.at[idx, 'AIS_MMSI_COUNTRY'] = csv_row.iloc[0]['AIS_MMSI_COUNTRY']
+            ship_list_gdf.at[idx, 'AIS_NAVSTATUS'] = csv_row.iloc[0]['AIS_NAVSTATUS']
+            ship_list_gdf.at[idx, 'VESSEL_NAME'] = csv_row.iloc[0]['VESSEL_NAME']
+            ship_list_gdf.at[idx, 'VESSEL_DRAFT'] = csv_row.iloc[0]['VESSEL_DRAFT']
+            ship_list_gdf.at[idx, 'ID_CALLSIGN'] = csv_row.iloc[0]['ID_CALLSIGN']
+            ship_list_gdf.at[idx, 'VOYAGE_ETA'] = csv_row.iloc[0]['VOYAGE_ETA']
+            ship_list_gdf.at[idx, 'VOYAGE_DESTINATION'] = csv_row.iloc[0]['VOYAGE_DESTINATION']
     
-    ship_list_gdf_index=0
-    for row in ship_list_gdf.itertuples(index=False):
-        point_3d = Point(row.geometry.x, row.geometry.y, 0.00000)
-        ship_list_gdf.loc[ship_list_gdf_index,'geometry']=point_3d
-        index=gdf[gdf['geometry']==point_3d].index[0]
-        ship_list_gdf.loc[ship_list_gdf_index,'IMO']=gdf.at[index,'AIS_Correlation']
-        ship_list_gdf_index+=1
+    # ship_list_gdf_index=0
+    # for idx,row in ship_list_gdf.itertuples(index=False):
+    #     point_3d = Point(row.geometry.x, row.geometry.y, 0.00000)
+    #     ship_list_gdf.loc[ship_list_gdf_index,'geometry']=point_3d
+    #     index=gdf[gdf['geometry']==point_3d].index[0]
+    #     ship_list_gdf.loc[ship_list_gdf_index,'IMO']=gdf.at[index,'AIS_Correlation']
+    #     csv_row = csv[csv['ID_IMO'] == row.IMO]
+    #     if not csv_row.empty:
+    #         ship_list_gdf.at[idx, 'KINEMATIC_POS_LLA_LAT'] = csv_row.iloc[0]['KINEMATIC_POS_LLA_LAT']
+    #         ship_list_gdf.at[idx, 'AIS_MMSI_COUNTRY'] = csv_row.iloc[0]['AIS_MMSI_COUNTRY']
+    #     ship_list_gdf_index+=1
+
 
     total_ship_point_gdf = gpd.GeoDataFrame(columns= ['IMO','geometry'],crs='EPSG:4326')
     total_ship_point_gdf.geometry=total_ship_list
