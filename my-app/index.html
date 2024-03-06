@@ -136,6 +136,7 @@
         #table-container {
             max-height: 200px;
             overflow: auto;
+            background-color: whitesmoke;
         }
  
         table {
@@ -250,6 +251,47 @@
             align-items: center;
             margin-bottom: 10px;
         }
+        #coordinates-display {
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 1px solid #ccc;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .kml-element {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.kml-name-box {
+    width: 400px;
+    height: 20px;
+    background-color: #f0f0f0;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.highlight-icon,
+.remove-icon {
+    margin-right: 10px;
+    cursor: pointer;
+}
+.csv-name-box {
+    width: 400px;
+    height: 20px;
+    background-color: #f0f0f0;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.csv-element {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
     </style>
 </head>
  
@@ -265,7 +307,7 @@
                         <li><label for="csv_Input" class="buttonCsv">Add CSV FILE</label></li>
                         <li><button class="button">Edit Data</button></li>
                         <li><button class="button" id="measureLength">Measure Length</button></li>
-                        <li><button class="button">Get Coordinates</button></li>
+                        <li><button class="button" id="get_cords">Get Coordinates</button></li>
                         <li><button id="correlateAis" class="button" >Correlate AIS</button></li>
                         <li><button class="button" id="verify_ais_table">Verify AIS</button></li>
                         <li><img id="logoApril" src="./APRIL.png" alt="april_logo" width="22px" height="28px"></li>
@@ -282,13 +324,13 @@
                         <div class="kmlData">
                             <h5 id="kmlHeading">KML Data</h5>
                             <div id="kmlDataAll">
-                                <div id="kmlButton"></div>
+                                 <div id="kmlContainer"></div>
                             </div>
                         </div>
                         <div class="csvData">
                             <h5 id="csvHeading">CSV data</h5>
                             <div id="csvDataAll">
-                                <div id="csvButton"></div>
+                                <div id="csvContainer"></div>
                             </div>
                         </div>
                     </div>
@@ -319,6 +361,10 @@
     </div>
     <script type="module" src="./main.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.6.1/jszip.min.js"></script>
+    <div id="coordinates-display" style="display: none;">
+        <p id="coordinates"></p>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
 </body>
  
 </html>

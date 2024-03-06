@@ -33,6 +33,7 @@ CORS(app, origins='*')
 # CORS(app, resources={r"/api/*": {"origins": "http://127.0.0.1:5000"}})
 @app.route('/get', methods=['POST'])
 def get():
+    # print(request.data)
     data = request.json
     xml_data = data['xmldata']
     csv_data = data['csvData']
@@ -249,8 +250,7 @@ def get():
             gdf.at[index,'AIS_Correlation']=row.IMO
     ship_list_gdf = gpd.GeoDataFrame(columns= ['IMO','geometry'],crs='EPSG:4326')
     ship_list_gdf.geometry=ship_list
-
-
+    
     ship_list_gdf_index=0
     for row in ship_list_gdf.itertuples(index=False):
         point_3d = Point(row.geometry.x, row.geometry.y, 0.00000)
