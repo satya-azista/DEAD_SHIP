@@ -52,6 +52,31 @@ const map = new Map({
 //     map.addLayer(imageOverlay);
  
 // }
+const correlateAis = document.getElementById("correlateAis")
+correlateAis.addEventListener('click', function()
+{
+    if(main_kml==undefined)
+    {
+        alert("Select KMZ");
+    }
+    else if(cstext==undefined)
+    {
+        alert("Select CSV")
+    }
+    else if(main_kml==undefined && cstext==undefined)
+    {
+        alert("select KMZ and CSV")
+    }
+    else
+    {
+        sendDataToServer(main_kml,cstext);
+    }
+
+verify_ais_csv = verify_ais;
+csvToTable(verify_ais_csv);
+});
+
+
 function sendDataToServer(variable1,variable2) {
     if(variable1==undefined)
     {
@@ -104,35 +129,17 @@ function sendDataToServer(variable1,variable2) {
             const ship_point= data.ship_point;
             const verify_ais = data.verify_ais;
             // const { ais_point, point, line, ais_point, ship_point, verify_ais } = data;
-
-            const correlateAis = document.getElementById("correlateAis")
-            correlateAis.addEventListener('click', function(){
-                if(main_kml==undefined)
-                {
-                    alert("Select KMZ");
+            map.getLayers().forEach(function (layer) {
+                if (layer instanceof VectorLayer) {
+                    map.removeLayer(layer);
                 }
-                else if(cstext==undefined)
-                {
-                    alert("Select CSV")
-                }
-                else if(main_kml==undefined && cstext==undefined)
-                {
-                    alert("select KMZ and CSV")
-                }
-                else{
-
-                map.getLayers().forEach(function (layer) {
-                    if (layer instanceof VectorLayer) {
-                        map.removeLayer(layer);
-                    }
-                });
-                overlayJson(ship_point, 'red')
-                        overlayJson(point, 'green'); //Blue
-            }
-            })
+            });
+            overlayJson(ship_point, 'red')
+            overlayJson(point, 'green');
             verify_ais_csv = verify_ais;
             csvToTable(verify_ais_csv);
-        })
+
+    })
         .catch(error => {
             console.error('Error:', error);
         });
@@ -567,18 +574,18 @@ function handleCsvFileUpload(event) {
     }
 }
 
-function convertFileToText(file) {
-    const reader = new FileReader();
-    reader.readAsText(file);
-    reader.onload = function(event) {
-        const text = event.target.result;
-        // console.log('CSV Text:', text);
-        // Now you can use the CSV text as needed
-    };
-    reader.onerror = function(event) {
-        console.error('Error converting CSV to text:', event.target.error);
-    };
-}
+// function convertFileToText(file) {
+//     const reader = new FileReader();
+//     reader.readAsText(file);
+//     reader.onload = function(event) {
+//         const text = event.target.result;
+//         // console.log('CSV Text:', text);
+//         // Now you can use the CSV text as needed
+//     };
+//     reader.onerror = function(event) {
+//         console.error('Error converting CSV to text:', event.target.error);
+//     };
+// }
 
 function highlightCSV(file) {
     main_csv = file;
@@ -639,9 +646,9 @@ function parseCSV(file) {
                 {
                     alert("select KMZ and CSV")
                 }
-                else{
-    sendDataToServer(main_kml,cstext);
-                }
+    //             else{
+    // sendDataToServer(main_kml,cstext);
+    //             }
  }
 
 
