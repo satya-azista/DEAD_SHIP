@@ -11,6 +11,8 @@ import { Style, Fill, Stroke, Circle } from 'ol/style';
 import { getLength } from 'ol/sphere.js';
 import { Draw } from 'ol/interaction.js';
 import Overlay from 'ol/Overlay';
+import { XYZ } from 'ol/source';
+
 // import { text } from 'stream/consumers';
 const zip = new JSZip();
  
@@ -18,40 +20,76 @@ let main_kml = undefined
 let main_csv = undefined
 let verify_ais_csv = undefined
 let cstext=undefined;
-const mousePositionControl = new MousePosition({
-    projection: 'EPSG:4326',
-    className: 'custom-mouse-position',
-    target: document.getElementById('mouse-position'),
-})
-const map = new Map({
-    controls: defaultControls().extend([mousePositionControl]),
-    target: 'map',
-    layers: [
-        new TileLayer({
-            source: new OSM(),
+// const mousePositionControl = new MousePosition({
+//     projection: 'EPSG:4326',
+//     className: 'custom-mouse-position',
+//     target: document.getElementById('mouse-position'),
+// })
+// const map = new Map({
+//     controls: defaultControls().extend([mousePositionControl]),
+//     target: 'map',
+//     layers: [
+//         new TileLayer({
+//             // source: new OSM(),
+//             source: arcgisTileLayer,
+//         }),
+//     ],
+//     view: new View({
+//         center: [0, 0],
+//         zoom: 2,
+//     }),
+// });
+// const mousePositionControl = new MousePosition({
+    //     projection: 'EPSG:4326',
+    //     className: 'custom-mouse-position',
+    //     target: document.getElementById('mouse-position'),
+    // });
+    
+    const mousePositionControl = new MousePosition({
+        projection: 'EPSG:4326',
+        className: 'custom-mouse-position',
+        target: document.getElementById('mouse-position'),
+    });
+    
+    const arcgisTileLayer = new TileLayer({
+        source: new XYZ({
+            url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            attributions: [
+                '&copy; <a href="https://www.arcgis.com/">Esri</a>',
+                'Tiles &copy; <a href="https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer">ArcGIS</a>',
+                'Tiles &copy; <a href="https://www.esri.com/en-us/home">Esri</a>'
+            ],
         }),
-    ],
-    view: new View({
-        center: [0, 0],
-        zoom: 2,
-    }),
-});
+    });
+    
+    const map = new Map({
+        controls: defaultControls().extend([mousePositionControl]),
+        target: 'map',
+        layers: [
+            arcgisTileLayer,
+        ],
+        view: new View({
+            center: [0, 0],
+            zoom: 2,
+        }),
+    });
+    
  
 
-// function addImageOverlayFromHref(href, west, south, east, north, buttonId) {
-//     const url = "./";
-//     const newPath = url + href;
-//     const newPathUrl = newPath.replace(/\s/g, "");
-//     const imageOverlay = new ImageLayer({
-//         source: new ImageStatic({
-//             url: newPathUrl,
-//             projection: 'EPSG:4326',
-//             imageExtent: [west, south, east, north]
-//         })
-//     });
-//     map.addLayer(imageOverlay);
+function addImageOverlayFromHref(href, west, south, east, north, buttonId) {
+    const url = "./";
+    const newPath = url + href;
+    const newPathUrl = newPath.replace(/\s/g, "");
+    const imageOverlay = new ImageLayer({
+        source: new ImageStatic({
+            url: newPathUrl,
+            projection: 'EPSG:4326',
+            imageExtent: [west, south, east, north]
+        })
+    });
+    map.addLayer(imageOverlay);
  
-// }
+}
 const correlateAis = document.getElementById("correlateAis")
 correlateAis.addEventListener('click', function()
 {
@@ -456,46 +494,57 @@ const kmlFileInput = document.getElementById('fileInput');
 const kmlContainer = document.getElementById('kmlContainer');
 // Function to handle file upload
 kmlFileInput.addEventListener('change', handleKmlFileUpload);
-
 function handleKmlFileUpload(event) {
     const file = event.target.files[0];
-    if (file) {
-        // Check for duplicates
-        const isDuplicate = Array.from(kmlContainer.children).some(element => element.dataset.fileName === file.name);
-        if (!isDuplicate) {
-            // Create a new KML element
-            const kmlElement = document.createElement('div');
-            kmlElement.classList.add('kml-element');
-            
-            // Display the name box
-            const nameBox = document.createElement('div');
-            nameBox.classList.add('kml-name-box');
-            nameBox.textContent = file.name.slice(0, 32);
-            kmlElement.appendChild(nameBox);
-            
-            // Add eye icon
-            const eyeIcon = document.createElement('span');
-            eyeIcon.textContent = '👁️';
-            eyeIcon.classList.add('highlight-icon');
-            eyeIcon.addEventListener('click', () => highlightKML(file));
-            kmlElement.appendChild(eyeIcon);
+    if (file) 
+    {
+        const kmlElements = Array.from(kmlContainer.children);
 
-            // Add trash icon
-            const trashIcon = document.createElement('span');
-            trashIcon.textContent = '🗑️';
-            trashIcon.classList.add('remove-icon');
-            trashIcon.addEventListener('click', () => removeKML(kmlElement, file));
-            kmlElement.appendChild(trashIcon);
-
-            // Set data attribute with file name
-            kmlElement.dataset.fileName = file.name;
-
-            // Append the KML element to the container
-            kmlContainer.appendChild(kmlElement);
+        // Check if array has no elements
+        if (kmlElements.length === 0) {
+            appendKmlFile(file);
         } else {
-            alert('File already exists.');
+            // Check for duplicates only if array has elements
+            const isDuplicate = kmlElements.some(element => element.dataset.fileName === file.name);
+            if (!isDuplicate) {
+                appendKmlFile(file);
+            } else {
+                alert('File already exists.');
+            }
         }
     }
+}
+
+function appendKmlFile(file) {
+    // Create a new KML element
+    const kmlElement = document.createElement('div');
+    kmlElement.classList.add('kml-element');
+    
+    // Display the name box
+    const nameBox = document.createElement('div');
+    nameBox.classList.add('kml-name-box');
+    nameBox.textContent = file.name.slice(0, 32);
+    kmlElement.appendChild(nameBox);
+    
+    // Add eye icon
+    const eyeIcon = document.createElement('span');
+    eyeIcon.textContent = '👁️';
+    eyeIcon.classList.add('highlight-icon');
+    eyeIcon.addEventListener('click', () => highlightKML(file));
+    kmlElement.appendChild(eyeIcon);
+
+    // Add trash icon
+    const trashIcon = document.createElement('span');
+    trashIcon.textContent = '🗑️';
+    trashIcon.classList.add('remove-icon');
+    trashIcon.addEventListener('click', () => removeKML(kmlElement, file));
+    kmlElement.appendChild(trashIcon);
+
+    // Set data attribute with file name
+    kmlElement.dataset.fileName = file.name;
+
+    // Append the KML element to the container
+    kmlContainer.appendChild(kmlElement);
 }
 
 // Function to highlight KML
@@ -533,45 +582,62 @@ const csvFileInput = document.getElementById('csv_Input');
 const csvContainer = document.getElementById('csvContainer');
 // Function to handle file upload
 csvFileInput.addEventListener('change', handleCsvFileUpload);
-function handleCsvFileUpload(event) {
+function handleCsvFileUpload(event) 
+{
     const file = event.target.files[0];
-    if (file) {
-        // Check for duplicates
-        const isDuplicate = Array.from(csvContainer.children).some(element => element.dataset.fileName === file.name);
-        if (!isDuplicate) {
-            // Create a new KML element
-            const csvElement = document.createElement('div');
-            csvElement.classList.add('csv-element');
-            
-            // Display the name box
-            const nameBox = document.createElement('div');
-            nameBox.classList.add('csv-name-box');
-            nameBox.textContent = file.name.slice(0, 32);
-            csvElement.appendChild(nameBox);
-            
-            // Add eye icon
-            const eyeIcon = document.createElement('span');
-            eyeIcon.textContent = '👁️';
-            eyeIcon.classList.add('highlight-icon');
-            eyeIcon.addEventListener('click', () => highlightCSV(file));
-            csvElement.appendChild(eyeIcon);
-
-            // Add trash icon
-            const trashIcon = document.createElement('span');
-            trashIcon.textContent = '🗑️';
-            trashIcon.classList.add('remove-icon');
-            trashIcon.addEventListener('click', () => removeCSV(csvElement, file));
-            csvElement.appendChild(trashIcon);
-
-            // Set data attribute with file name
-            csvElement.dataset.fileName = file.name;
-
-            // Append the KML element to the container
-            csvContainer.appendChild(csvElement);
-        } else {
-            alert('File already exists.');
+    if (file) 
+    {
+        const csvElements=Array.from(csvContainer.children)
+        // Check if array has no elements
+        if(csvElements.length==0)
+        {
+            appendCsvFile(file);
+        }
+        else
+        {
+            const isDuplicate =csvElements.some(element => element.dataset.fileName === file.name);
+            if (!isDuplicate) 
+            {
+                appendCsvFile(file);
+            }
+            else 
+            {
+                alert('File already exists.');
+            }
         }
     }
+}
+function appendCsvFile(file)
+{
+        // Create a new KML element
+        const csvElement = document.createElement('div');
+        csvElement.classList.add('csv-element');
+        
+        // Display the name box
+        const nameBox = document.createElement('div');
+        nameBox.classList.add('csv-name-box');
+        nameBox.textContent = file.name.slice(0, 32);
+        csvElement.appendChild(nameBox);
+        
+        // Add eye icon
+        const eyeIcon = document.createElement('span');
+        eyeIcon.textContent = '👁️';
+        eyeIcon.classList.add('highlight-icon');
+        eyeIcon.addEventListener('click', () => highlightCSV(file));
+        csvElement.appendChild(eyeIcon);
+
+        // Add trash icon
+        const trashIcon = document.createElement('span');
+        trashIcon.textContent = '🗑️';
+        trashIcon.classList.add('remove-icon');
+        trashIcon.addEventListener('click', () => removeCSV(csvElement, file));
+        csvElement.appendChild(trashIcon);
+
+        // Set data attribute with file name
+        csvElement.dataset.fileName = file.name;
+
+        // Append the KML element to the container
+        csvContainer.appendChild(csvElement);
 }
 
 // function convertFileToText(file) {
