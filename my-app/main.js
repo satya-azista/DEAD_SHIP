@@ -16,10 +16,14 @@ import { XYZ } from 'ol/source';
 // import { text } from 'stream/consumers';
 const zip = new JSZip();
  
-let main_kml = undefined
-let main_csv = undefined
-let verify_ais_csv = undefined
+let main_kml = undefined;
+let main_csv = undefined;
+let verify_ais_csv = undefined;
 let cstext=undefined;
+let csv_buffer=undefined;
+let csv_line=undefined;
+let csv_point=undefined;
+let csv_name=undefined;
 // const mousePositionControl = new MousePosition({
 //     projection: 'EPSG:4326',
 //     className: 'custom-mouse-position',
@@ -167,6 +171,23 @@ function sendDataToServer(variable1,variable2) {
             const ship_point= data.ship_point;
             const verify_ais = data.verify_ais;
             // const { ais_point, point, line, ais_point, ship_point, verify_ais } = data;
+
+            document.getElementById(csv_name+'pointButton').addEventListener("click",function()
+            {
+                overlayJson(ais_point, 'blue')
+               
+            })
+            document.getElementById(csv_name+'lineButton').addEventListener("click",function()
+            {
+                overlayJson(line, '#006666')
+               
+            })
+            document.getElementById(csv_name+'bufferButton').addEventListener("click",function()
+            {
+                overlayJson(buffer, 'lightyellow');
+               
+            })
+
             map.getLayers().forEach(function (layer) {
                 if (layer instanceof VectorLayer) {
                     map.removeLayer(layer);
@@ -275,42 +296,42 @@ document.getElementById("verify_ais_table").addEventListener("click", function (
 });
  
 // Function to close the popup
-document.getElementById("close_button").addEventListener("click", function () {
-    document.getElementById("popup").style.display = "none";
-});
+// document.getElementById("close_button").addEventListener("click", function () {
+//     document.getElementById("popup").style.display = "none";
+// });
  
  
-// Variables to store the mouse position and the popup element
-var offsetX, offsetY;
-var popup = document.getElementById('popup');
+// // Variables to store the mouse position and the popup element
+// var offsetX, offsetY;
+// var popup = document.getElementById('popup');
  
-// Function to handle mouse down event on the popup header
-document.querySelector('.popup-header').addEventListener('mousedown', function (event) {
-    // Get the initial mouse position relative to the popup's position
-    offsetX = event.clientX - popup.offsetLeft;
-    offsetY = event.clientY - popup.offsetTop;
+// // Function to handle mouse down event on the popup header
+// document.querySelector('.popup-header').addEventListener('mousedown', function (event) {
+//     // Get the initial mouse position relative to the popup's position
+//     offsetX = event.clientX - popup.offsetLeft;
+//     offsetY = event.clientY - popup.offsetTop;
  
-    // Add event listener for mouse move
-    document.addEventListener('mousemove', movePopup);
+//     // Add event listener for mouse move
+//     document.addEventListener('mousemove', movePopup);
  
-    // Add event listener for mouse up
-    document.addEventListener('mouseup', function () {
-        // Remove event listeners for mouse move and mouse up
-        document.removeEventListener('mousemove', movePopup);
-        // document.removeEventListener('mouseup', arguments.callee);
-    });
-});
+//     // Add event listener for mouse up
+//     document.addEventListener('mouseup', function () {
+//         // Remove event listeners for mouse move and mouse up
+//         document.removeEventListener('mousemove', movePopup);
+//         // document.removeEventListener('mouseup', arguments.callee);
+//     });
+// });
  
-// Function to move the popup
-function movePopup(event) {
-    // Calculate the new position of the popup
-    var newX = event.clientX - offsetX;
-    var newY = event.clientY - offsetY;
+// // Function to move the popup
+// function movePopup(event) {
+//     // Calculate the new position of the popup
+//     var newX = event.clientX - offsetX;
+//     var newY = event.clientY - offsetY;
  
-    // Set the new position of the popup
-    popup.style.left = newX + 'px';
-    popup.style.top = newY + 'px';
-}
+//     // Set the new position of the popup
+//     popup.style.left = newX + 'px';
+//     popup.style.top = newY + 'px';
+// }
 
 function csvToTable(ais) {
     var tableContainer = document.getElementById('popup_content');
@@ -448,44 +469,44 @@ function activateMeasureLength() {
     map.addInteraction(draw);
 }
 
-document.getElementById('measureLength').addEventListener('click', activateMeasureLength);
+// document.getElementById('measureLength').addEventListener('click', activateMeasureLength);
 
 /////////////////////////
 //   GET COORDINATES   ///
 /////////////////////////
 
-let coordinatesOverlay; // Variable to hold the overlay for coordinates display
+// let coordinatesOverlay; // Variable to hold the overlay for coordinates display
 
-        function toggleCoordinateDisplay() {
-            if (coordinatesOverlay) {
-                // Remove the overlay if it exists
-                map.removeOverlay(coordinatesOverlay);
-                coordinatesOverlay = undefined;
-                return; // Exit the function
-            }
+//         function toggleCoordinateDisplay() {
+//             if (coordinatesOverlay) {
+//                 // Remove the overlay if it exists
+//                 map.removeOverlay(coordinatesOverlay);
+//                 coordinatesOverlay = undefined;
+//                 return; // Exit the function
+//             }
 
-            // Create an overlay to display coordinates
-            coordinatesOverlay = new ol.Overlay({
-                element: document.getElementById('coordinates-display'),
-                positioning: 'bottom-center',
-            });
+//             // Create an overlay to display coordinates
+//             coordinatesOverlay = new ol.Overlay({
+//                 element: document.getElementById('coordinates-display'),
+//                 positioning: 'bottom-center',
+//             });
 
-            // Add the overlay to the map
-            map.addOverlay(coordinatesOverlay);
+//             // Add the overlay to the map
+//             map.addOverlay(coordinatesOverlay);
 
-            // Listen to mousemove event on the map
-            map.on('pointermove', function (evt) {
-                if (evt.dragging) {
-                    return;
-                }
-                const coordinate = evt.coordinate;
-                const coords = ol.coordinate.toStringHDMS(ol.proj.transform(coordinate, 'EPSG:3857', 'EPSG:4326'));
-                document.getElementById('coordinates').innerText = 'Coordinates: ' + coords;
-                coordinatesOverlay.setPosition(coordinate);
-            });
-        }
+//             // Listen to mousemove event on the map
+//             map.on('pointermove', function (evt) {
+//                 if (evt.dragging) {
+//                     return;
+//                 }
+//                 const coordinate = evt.coordinate;
+//                 const coords = ol.coordinate.toStringHDMS(ol.proj.transform(coordinate, 'EPSG:3857', 'EPSG:4326'));
+//                 document.getElementById('coordinates').innerText = 'Coordinates: ' + coords;
+//                 coordinatesOverlay.setPosition(coordinate);
+//             });
+//         }
 
-        document.getElementById('get_cords').addEventListener('click', toggleCoordinateDisplay);
+//         document.getElementById('get_cords').addEventListener('click', toggleCoordinateDisplay);
 
 
 
@@ -607,53 +628,118 @@ function handleCsvFileUpload(event)
         }
     }
 }
-function appendCsvFile(file)
-{
-        // Create a new KML element
-        const csvElement = document.createElement('div');
-        csvElement.classList.add('csv-element');
-        
-        // Display the name box
-        const nameBox = document.createElement('div');
-        nameBox.classList.add('csv-name-box');
-        nameBox.textContent = file.name.slice(0, 32);
-        csvElement.appendChild(nameBox);
-        
-        // Add eye icon
-        const eyeIcon = document.createElement('span');
-        eyeIcon.textContent = '👁️';
-        eyeIcon.classList.add('highlight-icon');
-        eyeIcon.addEventListener('click', () => highlightCSV(file));
-        csvElement.appendChild(eyeIcon);
 
-        // Add trash icon
-        const trashIcon = document.createElement('span');
-        trashIcon.textContent = '🗑️';
-        trashIcon.classList.add('remove-icon');
-        trashIcon.addEventListener('click', () => removeCSV(csvElement, file));
-        csvElement.appendChild(trashIcon);
+function appendCsvFile(file) {
+    // Create a new CSV element
+    const csvElement = document.createElement('div');
+    csvElement.classList.add('csv-element');
+    
+    // Display the name box as a button
+    const nameButton = document.createElement('button');
+    nameButton.classList.add('csv-name-button');
+    nameButton.textContent = file.name.slice(0, 32);
+    csv_name=nameButton.textContent;
+    nameButton.addEventListener('click', () => toggleCSVOptions(csvElement));
+    csvElement.appendChild(nameButton);
 
-        // Set data attribute with file name
-        csvElement.dataset.fileName = file.name;
+    // Add eye icon
+    const eyeIcon = document.createElement('span');
+    eyeIcon.textContent = '👁️';
+    eyeIcon.classList.add('highlight-icon');
+    eyeIcon.addEventListener('click', () => highlightCSV(file,nameButton.textContent));
+    csvElement.appendChild(eyeIcon);
 
-        // Append the KML element to the container
-        csvContainer.appendChild(csvElement);
+    // Add trash icon
+    const trashIcon = document.createElement('span');
+    trashIcon.textContent = '🗑️';
+    trashIcon.classList.add('remove-icon');
+    trashIcon.addEventListener('click', () => removeCSV(csvElement, file));
+    csvElement.appendChild(trashIcon);
+
+    // Set data attribute with file name
+    csvElement.dataset.fileName = file.name;
+
+    // Append the CSV element to the container
+    csvContainer.appendChild(csvElement);
 }
 
-// function convertFileToText(file) {
-//     const reader = new FileReader();
-//     reader.readAsText(file);
-//     reader.onload = function(event) {
-//         const text = event.target.result;
-//         // console.log('CSV Text:', text);
-//         // Now you can use the CSV text as needed
-//     };
-//     reader.onerror = function(event) {
-//         console.error('Error converting CSV to text:', event.target.error);
-//     };
-// }
+// function toggleCSVOptions(csvElement) {
+//     const existingOptions = csvElement.querySelector('.csv-options');
+//     if (existingOptions) {
+//         existingOptions.remove();
+//     } else {
+//         const optionsDiv = document.createElement('div');
+//         optionsDiv.classList.add('csv-options');
+        
+//         // Add point option
+//         const pointButton = createOptionButton('Point', () => selectCSVOption('point'));
+//         pointButton.classList.add('context-point');
+//         optionsDiv.appendChild(pointButton);
 
-function highlightCSV(file) {
+//         // Add line option
+//         const lineButton = createOptionButton('Line', () => selectCSVOption('line'));
+//         lineButton.classList.add('context-line');
+//         optionsDiv.appendChild(lineButton);
+
+//         // Add buffer option
+//         const bufferButton = createOptionButton('Buffer', () => selectCSVOption('buffer'));
+//         bufferButton.classList.add('context-buffer');
+//         optionsDiv.appendChild(bufferButton);
+
+//         csvElement.appendChild(optionsDiv);
+//     }
+// }
+function toggleCSVOptions(csvElement) {
+    const existingOptions = csvElement.querySelector('.csv-options');
+    if (existingOptions) {
+        existingOptions.remove();
+    } else {
+        const optionsDiv = document.createElement('div');
+        optionsDiv.classList.add('csv-options');
+        
+        // Add point option
+        const pointButton = createOptionButton('Point', () => selectCSVOption('point'));
+        pointButton.classList.add('context-point');
+        pointButton.id = csv_name+'pointButton'; // Set ID for point button
+        optionsDiv.appendChild(pointButton);
+
+        // Add line option
+        const lineButton = createOptionButton('Line', () => selectCSVOption('line'));
+        lineButton.classList.add('context-line');
+        lineButton.id = csv_name+'lineButton'; // Set ID for line button
+        optionsDiv.appendChild(lineButton);
+
+        // Add buffer option
+        const bufferButton = createOptionButton('Buffer', () => selectCSVOption('buffer'));
+        bufferButton.classList.add('context-buffer');
+        bufferButton.id = csv_name+'bufferButton'; // Set ID for buffer button
+        optionsDiv.appendChild(bufferButton);
+
+        csvElement.appendChild(optionsDiv);
+    }
+}
+
+
+function createOptionButton(text, onClickHandler) {
+    const button = document.createElement('button');
+    button.textContent = text;
+    button.addEventListener('click', onClickHandler);
+    return button;
+}
+
+
+
+
+
+
+function selectCSVOption(option) {
+    // Implement the logic to handle the selected option (e.g., point, line, buffer)
+    console.log(`Selected CSV option: ${option}`);
+}
+
+
+function highlightCSV(file,name) {
+    csv_name=name;
     main_csv = file;
     parseCSV(file);
     const csvElements = Array.from(csvContainer.children);
@@ -667,17 +753,32 @@ function highlightCSV(file) {
         }
     });
 }
-
-// Function to remove KML
 function removeCSV(csvElement, file) {
     if (main_csv === file) {
         main_csv = undefined;
     }
-    // Implement removal logic
-    main_csv=undefined;
+    
+    // Remove the associated options
+    const optionsDiv = csvElement.querySelector('.csv-options');
+    if (optionsDiv) {
+        optionsDiv.remove();
+    }
+    
+    // Remove the CSV element
     csvElement.remove();
+    
     console.log(`Removed CSV: ${file.name}`);
 }
+// Function to remove KML
+// function removeCSV(csvElement, file) {
+//     if (main_csv === file) {
+//         main_csv = undefined;
+//     }
+//     // Implement removal logic
+//     main_csv=undefined;
+//     csvElement.remove();
+//     console.log(`Removed CSV: ${file.name}`);
+// }
 
 function parseCSV(file) {
     if (!file || !FileReader) {
