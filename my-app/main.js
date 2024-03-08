@@ -295,43 +295,43 @@ document.getElementById("verify_ais_table").addEventListener("click", function (
  
 });
  
-// Function to close the popup
-// document.getElementById("close_button").addEventListener("click", function () {
-//     document.getElementById("popup").style.display = "none";
-// });
+//Function to close the popup
+document.getElementById("close_button").addEventListener("click", function () {
+    document.getElementById("popup").style.display = "none";
+});
  
  
-// // Variables to store the mouse position and the popup element
-// var offsetX, offsetY;
-// var popup = document.getElementById('popup');
+// Variables to store the mouse position and the popup element
+var offsetX, offsetY;
+var popup = document.getElementById('popup');
  
-// // Function to handle mouse down event on the popup header
-// document.querySelector('.popup-header').addEventListener('mousedown', function (event) {
-//     // Get the initial mouse position relative to the popup's position
-//     offsetX = event.clientX - popup.offsetLeft;
-//     offsetY = event.clientY - popup.offsetTop;
+// Function to handle mouse down event on the popup header
+document.querySelector('.popup-header').addEventListener('mousedown', function (event) {
+    // Get the initial mouse position relative to the popup's position
+    offsetX = event.clientX - popup.offsetLeft;
+    offsetY = event.clientY - popup.offsetTop;
  
-//     // Add event listener for mouse move
-//     document.addEventListener('mousemove', movePopup);
+    // Add event listener for mouse move
+    document.addEventListener('mousemove', movePopup);
  
-//     // Add event listener for mouse up
-//     document.addEventListener('mouseup', function () {
-//         // Remove event listeners for mouse move and mouse up
-//         document.removeEventListener('mousemove', movePopup);
-//         // document.removeEventListener('mouseup', arguments.callee);
-//     });
-// });
+    // Add event listener for mouse up
+    document.addEventListener('mouseup', function () {
+        // Remove event listeners for mouse move and mouse up
+        document.removeEventListener('mousemove', movePopup);
+        // document.removeEventListener('mouseup', arguments.callee);
+    });
+});
  
-// // Function to move the popup
-// function movePopup(event) {
-//     // Calculate the new position of the popup
-//     var newX = event.clientX - offsetX;
-//     var newY = event.clientY - offsetY;
+// Function to move the popup
+function movePopup(event) {
+    // Calculate the new position of the popup
+    var newX = event.clientX - offsetX;
+    var newY = event.clientY - offsetY;
  
-//     // Set the new position of the popup
-//     popup.style.left = newX + 'px';
-//     popup.style.top = newY + 'px';
-// }
+    // Set the new position of the popup
+    popup.style.left = newX + 'px';
+    popup.style.top = newY + 'px';
+}
 
 function csvToTable(ais) {
     var tableContainer = document.getElementById('popup_content');
@@ -472,43 +472,38 @@ function activateMeasureLength() {
 // document.getElementById('measureLength').addEventListener('click', activateMeasureLength);
 
 /////////////////////////
-//   GET COORDINATES   ///
+///  GET COORDINATES  ///
 /////////////////////////
 
-// let coordinatesOverlay; // Variable to hold the overlay for coordinates display
+let isGetCoordsActive = false;
 
-//         function toggleCoordinateDisplay() {
-//             if (coordinatesOverlay) {
-//                 // Remove the overlay if it exists
-//                 map.removeOverlay(coordinatesOverlay);
-//                 coordinatesOverlay = undefined;
-//                 return; // Exit the function
-//             }
+// Event listener for the "Get Coordinates" button
+const getCoordsButton = document.getElementById('get_cords');
+getCoordsButton.addEventListener('click', () => {
+    // Toggle the state of the button
+    isGetCoordsActive = !isGetCoordsActive;
 
-//             // Create an overlay to display coordinates
-//             coordinatesOverlay = new ol.Overlay({
-//                 element: document.getElementById('coordinates-display'),
-//                 positioning: 'bottom-center',
-//             });
+    if (isGetCoordsActive) {
+        // Add a click event listener to the map
+        map.on('click', handleMapClick);
+        getCoordsButton.textContent = 'Stop Getting Coordinates'; // Change button text
+    } else {
+        // Remove the click event listener from the map
+        map.un('click', handleMapClick);
+        getCoordsButton.textContent = 'Get Coordinates'; // Change button text back
+    }
+});
 
-//             // Add the overlay to the map
-//             map.addOverlay(coordinatesOverlay);
+// Event handler for map click events
+function handleMapClick(event) {
+    const coords = event.coordinate;
+    console.log('Coordinates:', coords);
+    // Perform any other actions with the coordinates as needed
+}
 
-//             // Listen to mousemove event on the map
-//             map.on('pointermove', function (evt) {
-//                 if (evt.dragging) {
-//                     return;
-//                 }
-//                 const coordinate = evt.coordinate;
-//                 const coords = ol.coordinate.toStringHDMS(ol.proj.transform(coordinate, 'EPSG:3857', 'EPSG:4326'));
-//                 document.getElementById('coordinates').innerText = 'Coordinates: ' + coords;
-//                 coordinatesOverlay.setPosition(coordinate);
-//             });
-//         }
-
-//         document.getElementById('get_cords').addEventListener('click', toggleCoordinateDisplay);
-
-
+/////////////////////////
+////    KML DATA     ////
+/////////////////////////
 
 
 const kmlFileInput = document.getElementById('fileInput');
@@ -597,7 +592,9 @@ function removeKML(kmlElement, file) {
     // console.log(`Removed KML: ${file.name}`);
 }
 
-
+/////////////////////////
+////    CSV DATA     ////
+/////////////////////////
 
 const csvFileInput = document.getElementById('csv_Input');
 const csvContainer = document.getElementById('csvContainer');
@@ -662,33 +659,6 @@ function appendCsvFile(file) {
     // Append the CSV element to the container
     csvContainer.appendChild(csvElement);
 }
-
-// function toggleCSVOptions(csvElement) {
-//     const existingOptions = csvElement.querySelector('.csv-options');
-//     if (existingOptions) {
-//         existingOptions.remove();
-//     } else {
-//         const optionsDiv = document.createElement('div');
-//         optionsDiv.classList.add('csv-options');
-        
-//         // Add point option
-//         const pointButton = createOptionButton('Point', () => selectCSVOption('point'));
-//         pointButton.classList.add('context-point');
-//         optionsDiv.appendChild(pointButton);
-
-//         // Add line option
-//         const lineButton = createOptionButton('Line', () => selectCSVOption('line'));
-//         lineButton.classList.add('context-line');
-//         optionsDiv.appendChild(lineButton);
-
-//         // Add buffer option
-//         const bufferButton = createOptionButton('Buffer', () => selectCSVOption('buffer'));
-//         bufferButton.classList.add('context-buffer');
-//         optionsDiv.appendChild(bufferButton);
-
-//         csvElement.appendChild(optionsDiv);
-//     }
-// }
 function toggleCSVOptions(csvElement) {
     const existingOptions = csvElement.querySelector('.csv-options');
     if (existingOptions) {
@@ -769,16 +739,6 @@ function removeCSV(csvElement, file) {
     
     console.log(`Removed CSV: ${file.name}`);
 }
-// Function to remove KML
-// function removeCSV(csvElement, file) {
-//     if (main_csv === file) {
-//         main_csv = undefined;
-//     }
-//     // Implement removal logic
-//     main_csv=undefined;
-//     csvElement.remove();
-//     console.log(`Removed CSV: ${file.name}`);
-// }
 
 function parseCSV(file) {
     if (!file || !FileReader) {
@@ -813,9 +773,6 @@ function parseCSV(file) {
                 {
                     alert("select KMZ and CSV")
                 }
-    //             else{
-    // sendDataToServer(main_kml,cstext);
-    //             }
  }
 
 
@@ -842,7 +799,6 @@ function parseCSV(file) {
     }
     return data;
 }
-
 
 
 function parseKml(file) {
@@ -881,3 +837,101 @@ function mainkml(kmlData)
     console.log(kmlData);
     main_kml=kmlData;
 }
+
+
+
+
+// // Define the vector source
+// const source = new VectorSource();
+
+// // Define the vector layer
+// const vector = new VectorLayer({
+//   source: source,
+//   style: {
+//     'fill-color': 'rgba(255, 255, 255, 0.2)',
+//     'stroke-color': '#ffcc33',
+//     'stroke-width': 2,
+//     'circle-radius': 7,
+//     'circle-fill-color': '#ffcc33',
+//   },
+// });
+
+// // Function to format length output
+// const formatLength = function (line) {
+//   const length = getLength(line);
+//   let output;
+//   if (length > 100) {
+//     output = Math.round((length / 1000) * 100) / 100 + ' ' + 'km';
+//   } else {
+//     output = Math.round(length * 100) / 100 + ' ' + 'm';
+//   }
+//   return output;
+// };
+
+// // Function to create interaction for measuring length
+// function addInteraction() {
+//   const draw = new Draw({
+//     source: source,
+//     type: 'LineString',
+//     style: new Style({
+//       stroke: new Stroke({
+//         color: 'rgba(255, 0, 0, 0.7)',
+//         width: 2,
+//       }),
+//     }),
+//   });
+//   map.addInteraction(draw);
+
+//   let measureTooltipElement;
+//   let measureTooltip;
+
+//   draw.on('drawstart', function (evt) {
+//     measureTooltipElement = document.createElement('div');
+//     measureTooltipElement.className = 'ol-tooltip ol-tooltip-measure';
+//     measureTooltip = new Overlay({
+//       element: measureTooltipElement,
+//       offset: [0, -15],
+//       positioning: 'bottom-center',
+//       stopEvent: false,
+//       insertFirst: false,
+//     });
+//     map.addOverlay(measureTooltip);
+
+//     let sketch = evt.feature;
+
+//     let listener;
+//     sketch.on('change', function (evt) {
+//       const geom = evt.target.getGeometry();
+//       const output = formatLength(geom);
+//       const tooltipCoord = geom.getLastCoordinate();
+//       measureTooltipElement.innerHTML = output;
+//       measureTooltip.setPosition(tooltipCoord);
+//     });
+
+//     draw.on('drawend', function () {
+//       measureTooltipElement.className = 'ol-tooltip ol-tooltip-static';
+//       measureTooltip.setOffset([0, -7]);
+//       sketch = null;
+//       measureTooltipElement = null;
+//       createMeasureTooltip();
+//       unByKey(listener);
+//     });
+//   });
+
+//   draw.on('pointermove', function (evt) {
+//     if (evt.dragging) {
+//       return;
+//     }
+//     const helpMsg = 'Click to start drawing';
+//     measureTooltipElement.innerHTML = helpMsg;
+//     measureTooltip.setPosition(evt.coordinate);
+//   });
+// }
+
+// // Create interaction for measuring length when the button is clicked
+// document.getElementById('measureLength').addEventListener('click', function () {
+//   addInteraction();
+// });
+
+
+
