@@ -934,6 +934,3 @@ function mainkml(kmlData)
 // document.getElementById('measureLength').addEventListener('click', function () {
 //   addInteraction();
 // });
-
-
-
