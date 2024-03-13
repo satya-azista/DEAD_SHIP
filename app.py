@@ -63,6 +63,7 @@ def get():
     imo = []
     geometry = []
     geometry_line = []
+    two_point=[]
     for i in grp.ID_IMO:
         a, b = grp.get_group(i[0]).index[:2]
         t1 = pairs._get_value(a, "TIMESTAMP_SOURCE")
@@ -74,6 +75,8 @@ def get():
             lat_end, long_end = pairs._get_value(
                 b, "KINEMATIC_POS_LLA_LAT"
             ), pairs._get_value(b, "KINEMATIC_POS_LLA_LON")
+            two_point.append(Point(lat_start,long_start))
+            two_point.append(Point(lat_end,long_end))
             ratio = (AIStime - t1) / (t2 - t1)
 
         elif t1 == t2:
@@ -86,6 +89,8 @@ def get():
                 a, "KINEMATIC_POS_LLA_LAT"
             ), pairs._get_value(a, "KINEMATIC_POS_LLA_LON")
             ratio = (AIStime - t2) / (t1 - t2)
+            two_point.append(Point(lat_start,long_start))
+            two_point.append(Point(lat_end,long_end))
 
         d, b = haversine(long_start, lat_start, long_end, lat_end)
         d = d * ratio
@@ -95,7 +100,8 @@ def get():
         geometry.append(Point(new.longitude, new.latitude))
         geometry_line.append(LineString([(long_start, lat_start), (long_end, lat_end)]))
         # int_points.append(new_pt)
-
+    two_point_pair=gpd.GeoDataFrame(columns=["IMO", "geometry"], crs="EPSG:4326")
+    
     int_points_pair = gpd.GeoDataFrame(columns=["IMO", "geometry"], crs="EPSG:4326")
     int_points_pair.geometry = geometry
     int_points_pair.IMO = imo
@@ -147,6 +153,18 @@ def get():
             LineString([(long_start, lat_start), (int_pt.longitude, int_pt.latitude)])
         )
         imo.append(i)
+
+
+    AIS_IMO=[]
+    AIS_GEOMETRY=[]
+    for i,row in csv.iterrows():
+        AIS_IMO.append(int(row["ID_IMO"]))
+        AIS_GEOMETRY.append(Point(float(row["KINEMATIC_POS_LLA_LON"]),float(row["KINEMATIC_POS_LLA_LAT"])))
+   
+ 
+    AIS_Points = gpd.GeoDataFrame(columns=["imo", "geometry"], crs="EPSG:4326")
+    AIS_Points.geometry = AIS_GEOMETRY
+    AIS_Points.imo = AIS_IMO
 
     int_points_single = gpd.GeoDataFrame(columns=["IMO", "geometry"], crs="EPSG:4326")
     int_points_single.geometry = geometry
@@ -308,6 +326,7 @@ def get():
             verify_ais.at[index, 'CORELATION'] = 'YES'
 
     verify_ais_csv = verify_ais.to_csv(index=False)
+    json_AIS=AIS_Points.to_json()
     # verify_ais_json=verify_ais.to_json()
     combined_json = {
     "ais_point":json_point,
@@ -315,7 +334,8 @@ def get():
     "line": json_line,
     "buffer": json_buffer,
     "ship_point":json_total_ship_point,
-    "verify_ais":verify_ais_csv
+    "verify_ais":verify_ais_csv,
+    "AIS":json_AIS
     }
     # Return the combined JSON object
     return jsonify(combined_json)

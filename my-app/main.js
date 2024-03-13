@@ -170,6 +170,7 @@ function sendDataToServer(variable1,variable2) {
             const buffer = data.buffer;
             const ship_point= data.ship_point;
             const verify_ais = data.verify_ais;
+            const AIS=data.AIS;
             // const { ais_point, point, line, ais_point, ship_point, verify_ais } = data;
 
             document.getElementById(csv_name+'pointButton').addEventListener("click",function()
@@ -193,8 +194,9 @@ function sendDataToServer(variable1,variable2) {
                     map.removeLayer(layer);
                 }
             });
-            overlayJson(ship_point, 'red')
-            overlayJson(point, 'green');
+            // overlayJson(ship_point, 'red')
+            // overlayJson(point, 'green');
+            overlayJson(AIS,'yellow');
             verify_ais_csv = verify_ais;
             csvToTable(verify_ais_csv);
 
