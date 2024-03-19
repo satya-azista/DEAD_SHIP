@@ -199,13 +199,14 @@ function sendDataToServer(variable1,variable2) {
                
             })
 
-            // map.getLayers().forEach(function (layer) {
-            //     if (layer instanceof VectorLayer) {
-            //         map.removeLayer(layer);
-            //     }
-            // });
+            map.getLayers().forEach(function (layer) {
+                if (layer instanceof VectorLayer) {
+                    map.removeLayer(layer);
+                }
+            });
             // overlayJson(ship_point, 'red')
             // overlayJson(point, 'green');
+            overlayJson(AIS,'yellow');
             verify_ais_csv = verify_ais;
             csvToTable(verify_ais_csv);
 
@@ -952,100 +953,3 @@ function mainkml(kmlData)
 // document.getElementById('measureLength').addEventListener('click', function () {
 //   addInteraction();
 // });
-
-function getKMLData(buffer) {
-    let kmlData;
-    zip.load(buffer);
-    const kmlFile = zip.file(/\.kml$/i)[0];
-    if (kmlFile) {
-        kmlData = kmlFile.asText();
-    }
-    return kmlData;
-}
-
-function getKMLImage(href) {
-    console.log(href)
-    const index = window.location.href.lastIndexOf('/');
-    if (index !== -1) {
-        const kmlFile = zip.file(href.slice(index + 1));
-        console.log(kmlFile);
-        if (kmlFile) {
-
-            return URL.createObjectURL(new Blob([kmlFile.asArrayBuffer()]));
-
-        }
-    }
-    console.log(href);
-    return href;
-}
-
-class KMZ extends KML {
-    constructor(opt_options) {
-        const options = opt_options || {};
-        options.iconUrlFunction = getKMLImage;
-        super(options);
-    }
-
-    getType() {
-        return 'arraybuffer';
-    }
-
-    readFeature(source, options) {
-        const kmlData = getKMLData(source);
-        return super.readFeature(kmlData, options);
-    }
-
-    readFeatures(source, options) {
-        const kmlData = getKMLData(source);
-        console.log(kmlData);
-        parseKML(kmlData);
-        return super.readFeatures(kmlData, options);
-    }
-}
-
-function parse_KML(kmlData) 
-{
-    try {
-        const parser = new DOMParser();
-        const kmlDoc = parser.parseFromString(kmlData, 'text/xml');
-        const groundOverlays = kmlDoc.querySelectorAll('GroundOverlay');
-        
-        groundOverlays.forEach(groundOverlay => {
-            const imageUrl = groundOverlay.querySelector('Icon href').textContent;
-            const latLonBox = groundOverlay.querySelector('LatLonBox');
-            const north = parseFloat(latLonBox.querySelector('north').textContent);
-            const south = parseFloat(latLonBox.querySelector('south').textContent);
-            const east = parseFloat(latLonBox.querySelector('east').textContent);
-            const west = parseFloat(latLonBox.querySelector('west').textContent);
-            
-            addImageOverlayFromHref(imageUrl, west, south, east, north);
-        });
-        
-        const vectorSource = new VectorSource({
-            features: new KML().readFeatures(kmlData, {
-            dataProjection: 'EPSG:4326',  // Projection of the KML data
-            featureProjection: 'EPSG:3857'  // Projection for the features
-          })
-        });
-        const vectorLayer = new VectorLayer({
-            source: vectorSource
-        });
-        map.addLayer(vectorLayer);
-    } catch (error) {
-        console.error('Error parsing KML and adding image overlay:', error);
-    }
-}
-
-function addImageOverlayFromHref(href, west, south, east, north) {
-    const url = "../";
-    const newPath = url + href;
-    const newPathUrl = newPath.replace(/\s/g, "");
-    const imageOverlay = new ImageLayer({
-        source: new ImageStatic({
-            url: newPathUrl,
-            projection: 'EPSG:4326',
-            imageExtent: [west, south, east, north]
-        })
-    });
-    map.addLayer(imageOverlay);
-}
