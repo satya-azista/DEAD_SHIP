@@ -31,6 +31,48 @@ from PIL import Image
 app = Flask(__name__)
 CORS(app, origins='*')
 # CORS(app, resources={r"/api/*": {"origins": "http://127.0.0.1:5000"}})
+
+
+@app.route('/images', methods=['POST'])
+def images():
+    # output_dir=r"C:\Users\Training\Desktop\dead_ship\DEAD_SHIP"
+    output_dir = current_app.root_path+'/my-app'
+    os.makedirs(output_dir, exist_ok=True)
+    file=request.data
+    # print(file)
+    with zipfile.ZipFile(BytesIO(file), 'r') as kmz:
+        kmz.extractall(output_dir)
+    
+    # Find KML files
+    kml_files = [filename for filename in kmz.namelist() if filename.endswith('.kml')]
+    
+    for kml_file in kml_files:
+        kml_path = os.path.join(output_dir, kml_file)
+        tree = ET.parse(kml_path)
+        root = tree.getroot()
+        
+        # Extract image URLs from KML
+        image_urls = []
+        for elem in root.iter():
+            if elem.tag.endswith('Icon') or elem.tag.endswith('GroundOverlay'):
+                for child in elem:
+                    if child.tag.endswith('href'):
+                        image_urls.append(child.text)
+        
+        # Download and save images
+        for url in image_urls:
+            image_filename = os.path.basename(url)
+            image_path = os.path.join(output_dir, image_filename)
+            with open(image_path, 'wb') as f:
+                response = requests.get(url)
+                f.write(response.content)
+                print(f"Downloaded: {image_filename}")
+
+    return "images extraction Failed"
+
+
+
+
 @app.route('/get', methods=['POST'])
 def get():
     # print(request.data)
@@ -293,11 +335,20 @@ def get():
 
     total_ship_point_gdf = gpd.GeoDataFrame(columns= ['IMO','geometry'],crs='EPSG:4326')
     total_ship_point_gdf.geometry=total_ship_list
-
+    AIS_imo = []
+    AIS_geometry = []
+    for i,row in csv.iterrows():
+        # AIS_imo.append(int(row["ID_IMO"]))
+        AIS_geometry.append(Point(float(row["KINEMATIC_POS_LLA_LON"]),float(row["KINEMATIC_POS_LLA_LAT"])))
+   
+ 
+    AIS_Points = gpd.GeoDataFrame(columns=["imo", "geometry"], crs="EPSG:4326")
+    AIS_Points.geometry = AIS_geometry
+    # AIS_Points.imo = AIS_imo
     
     json_ship_list_point=ship_list_gdf.to_json()
     json_total_ship_point=total_ship_point_gdf.to_json()
-
+    json_ais=AIS_Points.to_json()
     verify_ais=gpd.GeoDataFrame(columns= ['Image','Number','CORELATION','AIS'])
     verify_ais.Number=gdf.Name
     verify_ais.AIS=gdf.AIS_Correlation
@@ -315,7 +366,8 @@ def get():
     "line": json_line,
     "buffer": json_buffer,
     "ship_point":json_total_ship_point,
-    "verify_ais":verify_ais_csv
+    "verify_ais":verify_ais_csv,
+    "AIS":json_ais
     }
     # Return the combined JSON object
     return jsonify(combined_json)
