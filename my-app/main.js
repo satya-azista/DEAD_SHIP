@@ -582,8 +582,8 @@ function appendKmlFile(file) {
 // Function to highlight KML
 function highlightKML(file) {
     main_kml =file;
-    sendForImages(file);
-    parse_KML(file);
+    // sendForImages(file);
+    // parse_KML(file);
     parseKml(file);
     // Implement highlighting logic
     const kmlElements = Array.from(kmlContainer.children);
@@ -775,7 +775,7 @@ function parseCSV(file) {
  function toTable(text)
  {
     cstext=text;
-    console.log(mainKml);
+    // console.log(mainKml);
     sendDataToServer(main_kml,cstext);
     const parsedData = make_tab(cstext);
     const table = createTable(parsedData);
@@ -953,3 +953,6 @@ function mainkml(kmlData)
 // document.getElementById('measureLength').addEventListener('click', function () {
 //   addInteraction();
 // });
+
+
+

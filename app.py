@@ -197,16 +197,16 @@ def get():
         imo.append(i)
 
 
-    AIS_IMO=[]
-    AIS_GEOMETRY=[]
-    for i,row in csv.iterrows():
-        AIS_IMO.append(int(row["ID_IMO"]))
-        AIS_GEOMETRY.append(Point(float(row["KINEMATIC_POS_LLA_LON"]),float(row["KINEMATIC_POS_LLA_LAT"])))
+    # AIS_IMO=[]
+    # AIS_GEOMETRY=[]
+    # for i,row in csv.iterrows():
+    #     AIS_IMO.append(int(row["ID_IMO"]))
+    #     AIS_GEOMETRY.append(Point(float(row["KINEMATIC_POS_LLA_LON"]),float(row["KINEMATIC_POS_LLA_LAT"])))
    
  
-    AIS_Points = gpd.GeoDataFrame(columns=["imo", "geometry"], crs="EPSG:4326")
-    AIS_Points.geometry = AIS_GEOMETRY
-    AIS_Points.imo = AIS_IMO
+    # AIS_Points = gpd.GeoDataFrame(columns=["imo", "geometry"], crs="EPSG:4326")
+    # AIS_Points.geometry = AIS_GEOMETRY
+    # AIS_Points.imo = AIS_IMO
 
     int_points_single = gpd.GeoDataFrame(columns=["IMO", "geometry"], crs="EPSG:4326")
     int_points_single.geometry = geometry
@@ -353,7 +353,7 @@ def get():
 
     total_ship_point_gdf = gpd.GeoDataFrame(columns= ['IMO','geometry'],crs='EPSG:4326')
     total_ship_point_gdf.geometry=total_ship_list
-    AIS_imo = []
+    # AIS_imo = []
     AIS_geometry = []
     for i,row in csv.iterrows():
         # AIS_imo.append(int(row["ID_IMO"]))
@@ -377,7 +377,7 @@ def get():
             verify_ais.at[index, 'CORELATION'] = 'YES'
 
     verify_ais_csv = verify_ais.to_csv(index=False)
-    json_AIS=AIS_Points.to_json()
+    # json_AIS=AIS_Points.to_json()
     # verify_ais_json=verify_ais.to_json()
     combined_json = {
     "ais_point":json_point,
@@ -386,7 +386,7 @@ def get():
     "buffer": json_buffer,
     "ship_point":json_total_ship_point,
     "verify_ais":verify_ais_csv,
-    "AIS":json_AIS
+    "AIS":json_ais
     }
     # Return the combined JSON object
     return jsonify(combined_json)
