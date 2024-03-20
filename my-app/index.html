@@ -1,76 +1,371 @@
 <!DOCTYPE html>
 <html lang="en">
+ 
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <link rel="icon" type="image/x-icon" href="https://openlayers.org/favicon.ico" />
+    <link rel="stylesheet" href="node_modules/ol/ol.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Using OpenLayers with Vite</title>
+ 
+    <title> OpenLayers </title>
     <style>
-        .head {
-            color: blue;
+        body {
+            background-color: #f2f2f2;
+            /* Classy light gray background */
+        }
+ 
+        .container {
+            width: 100%;
+            background-color: black;
+        }
+ 
+        .navbar {
+            background-color: #333;
+            /* Classy dark gray navbar */
+            margin-bottom: 0;
+            border-radius: 0;
+            display: flex;
+            font-weight: bold;
+            justify-content: space-evenly;
+            align-items: center;
+            padding: 10px;
+        }
+ 
+        .navbar-nav {
+            text-align: center;
+        }
+ 
+        .navbar-nav>li {
+            display: inline-block;
+            float: none;
+            padding: 1px 10px;
+        }
+ 
+        .row.content {
+            height: 450px;
+        }
+ 
+        .buttonKmz,
+        .buttonCsv,
+        .button {
+            background-color: #008080;
+            border: 2px solid #006666;
+            color: white;
+            margin-right: 2px;
+            border-radius: 2px;
+            padding: 2px 3px;
+            margin-top: 2px;
+        }
+ 
+        .sidenav {
+            padding-top: 20px;
+            background-color: #333;
+            /* Classy dark gray sidenav */
+            height: 100vh;
+            margin-top: 5px;
+        }
+ 
+        #aisInfo {
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            padding: 5px;
+            background-color: #666;
+            /* Classy medium gray */
+            max-width: 300px;
+            font-size: 10px;
+            font-weight: bold;
+            color: #fff;
+            /* White text */
+        }
+ 
+        #aisInfo table {
+            width: 100%;
+        }
+ 
+        #aisInfo thead {
+            margin-top: 0px;
+        }
+ 
+        #aisInfo table tr {
+            margin-top: 0px;
+            border-bottom: 1px solid #ddd;
+        }
+ 
+        #aisInfo table tr:last-child {
+            border-bottom: none;
+        }
+ 
+        #aisInfo table td {
+            padding: 4px;
+            vertical-align: top;
+        }
+ 
+        #aisInfo table td:first-child {
+            font-weight: bold;
+            width: 50%;
+        }
+ 
+        #aisAttributes {
+            background-color: #666;
+            /* Classy medium gray */
+            color: white;
+            padding: 5px;
+        }
+ 
+        .kmlData,
+        .csvData {
+            height: 45vh;
+            border: 1px solid #ccc;
+            /* Light gray border */
+            color: #333;
+            /* Dark gray text */
+            margin-bottom: 15px;
+        }
+ 
+        #map {
+            margin-top: 10px;
+            width: 100%;
+            height: 300px;
+            border: 2px solid #006666;
+        }
+ 
+        #table-container {
+            max-height: 200px;
+            overflow: auto;
+            background-color: whitesmoke;
+        }
+ 
+        table {
+            border-collapse: collapse;
+            width: 100%;
+           
+        }
+        table,th,td {
+            border: 1px solid #006666;
+            padding: 4px 2px;
+            color: #333;
+            /* Dark gray text */
+        }
+ 
+        th {
+            position: sticky;
+            top: 0;
+            background-color: #008080;
+            color: #fff;
+        }
+ 
+        #mouse-position {
+            color: #333;
+            /* Dark gray text */
+        }
+ 
+        #csvHeading,
+        #kmlHeading {
+            padding: 3px;
+            margin-top: 0px;
+            background-color: #008080;
+            /* Classy teal heading background */
+            color: #fff;
+            /* White text */
+        }
+ 
+        .popup {
+            display: none;
+            position: fixed;
+            border-radius: 5px;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 40%;
+            height: 40%;
+            margin-left: 300px;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+ 
+        .popup-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px;
-            background-color: darkgray;
-        }
-        .buttons-container {
-            display: flex;
-            gap: 10px;
-        }
-        .button {
-            padding: 8px 16px;
-            border: none;
-            background-color: #4CAF50; /* Green */
+            padding: 10px 20px;
+            background-color: #2d6577;
             color: white;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            transition-duration: 0.4s;
+            border-bottom: 1px solid #ccc;
+            position: sticky;
+        }
+ 
+        .popup-header h2 {
+            margin: 0;
+            position: sticky;
+            top: 0px;
+        }
+ 
+        .popup-content {
+            padding: 20px;
+            background-color: #b2abcc;
+            margin: 20px auto;
+            width: 100%;
+            border: 1px solid #f5f5f5;
+        }
+ 
+        .close {
+            color: #fffbfb;
+            background-color: rgb(255, 1, 1);
+            font-size: 28px;
+            padding: 1px 4px;
             cursor: pointer;
-            border-radius: 8px;
+            border-radius: 4px;
         }
-        .button:hover {
-            background-color: grey;
+ 
+        .close:hover,
+        .close:focus {
+            color: rgb(250, 250, 250);
+            background-color: red;
+            text-decoration: none;
+            cursor: pointer;
         }
-        #map {
-            width: 60vw;
-            height: 60vh;
-            border: 2px solid;
-            margin-top: 100px; /* Adjust the top margin as needed */
-            
+ 
+        #logoApril {
+            margin-left: 500px;
+            width:300px;
+            height:100px;
         }
-        .foot
-        {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          width:60%;
+ 
+        .additionalButtons {
+            width: max-content;
+            margin: 5px;
+            padding: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
+ 
+        /* Style for the point, line, and buffer containers */
+        #point,
+        #line,
+        #buffer{    
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        #coordinates-display {
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 1px solid #ccc;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .kml-element {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.kml-name-box {
+    width: 400px;
+    height: 20px;
+    background-color: #f0f0f0;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.highlight-icon,
+.remove-icon {
+    margin-right: 10px;
+    cursor: pointer;
+}
+.csv-name-box {
+    width: 400px;
+    height: 20px;
+    background-color: #f0f0f0;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.csv-element {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
     </style>
 </head>
+ 
 <body>
-<header class="head">
-    <div class="buttons-container">
-      <input type="file" id="fileInput" style="display: none;" accept=".kmz">
-      <label for="fileInput" class="button">Add KMZ FILE</label>
-      <input type="file" id="csv_Input" style="display: none;" accept=".csv">
-      <label for="csv_Input" class="button">Add CSV FILE</label>
-        <button class="button">Add AIS</button>
-        <button class="button">Edit Data</button>
-        <button class="button">Measure Length</button>
-        <button class="button">Get Coordinates</button>
-        <button class="button">Correlate AIS</button>
-        <button class="button">Verify AIS</button>
+    <div class="container">
+        <nav class="navbar navbar-inverse">
+            <div class="container-fluid">
+                <div class="collapse navbar-collapse" id="myNavbar">
+                    <ul class="nav navbar-nav">
+                        <li><input type="file" id="fileInput" style="display: none;" accept=".kmz"></li>
+                        <li><label for="fileInput" class="buttonKmz">Add KMZ FILE</label></li>
+                        <li><input type="file" id="csv_Input" style="display: none;" accept=".csv"></li>
+                        <li><label for="csv_Input" class="buttonCsv">Add CSV FILE</label></li>
+                        <li><button class="button">Edit Data</button></li>
+                        <li><button class="button" id="measureLength">Measure Length</button></li>
+                        <li><button class="button" id="get_cords">Get Coordinates</button></li>
+                        <li><button id="correlateAis" class="button" >Correlate AIS</button></li>
+                        <li><button class="button" id="verify_ais_table">Verify AIS</button></li>
+                        <li><img id="logoApril" src="./APRIL.png" alt="april_logo" width="22px" height="28px"></li>
+                    </ul>
+                </div>
+ 
+            </div>
+        </nav>
+ 
+        <div class="container-fluid text-center">
+            <div class="row content">
+                <div class="col-sm-3 sidenav">
+                    <div class="leftContainer">
+                        <div class="kmlData">
+                            <h5 id="kmlHeading">KML Data</h5>
+                            <div id="kmlDataAll">
+                                 <div id="kmlContainer"></div>
+                            </div>
+                        </div>
+                        <div class="csvData">
+                            <h5 id="csvHeading">CSV data</h5>
+                            <div id="csvDataAll">
+                                <div id="csvContainer"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 text-left">
+                    <div id="map" style="height: 60vh; width: 100%;"></div>
+                    <div id="mouse-position"></div>
+                    <div id="coord-display"></div>
+                    <div id="table-container"></div>
+                </div>
+                <div class="col-sm-3 sidenav">
+                    <div class="rightContainer">
+                        <h6 id="aisAttributes" style="margin-top: 0;">AIS Attributes</h6>
+                        <!-- <img src="./ais.jpg" alt="ship" height="150px" width="300vw"> -->
+                        <div id="aisInfo"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="logo">Your Logo Here</div>
-</header>
-<footer class="foot">
-    <div id="map"></div>
-</footer>
-<script type="module" src="./main.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.6.1/jszip.min.js"></script>
+    <div id="popup" class="popup">
+        <div class="popup-header">
+            <h2>Verify AIS</h2>
+            <span id="close_button" class="close">×</span>
+        </div>
+        <div id="popup_content" class="popup-content">
+            <!-- Table will be inserted here dynamically -->
+        </div>
+    </div>
+    <script type="module" src="./main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.6.1/jszip.min.js"></script>
+    <div id="coordinates-display" style="display: none;">
+        <p id="coordinates"></p>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
 </body>
+ 
 </html>
