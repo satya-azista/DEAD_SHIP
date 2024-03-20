@@ -161,11 +161,11 @@ function sendDataToServer(variable1,variable2) {
             // overlays.forEach(function(overlay) {
             //     map.removeOverlay(overlay);
             // });
-            map.getLayers().forEach(function (layer) {
-                if (layer instanceof VectorLayer) {
-                    map.removeLayer(layer);
-                }
-            });
+            // map.getLayers().forEach(function (layer) {
+            //     if (layer instanceof VectorLayer) {
+            //         map.removeLayer(layer);
+            //     }
+            // });
             const ais_point = data.ais_point;
             const point = data.point;
             const line = data.line;
@@ -199,11 +199,11 @@ function sendDataToServer(variable1,variable2) {
                
             })
 
-            map.getLayers().forEach(function (layer) {
-                if (layer instanceof VectorLayer) {
-                    map.removeLayer(layer);
-                }
-            });
+            // map.getLayers().forEach(function (layer) {
+            //     if (layer instanceof VectorLayer) {
+            //         map.removeLayer(layer);
+            //     }
+            // });
             // overlayJson(ship_point, 'red')
             // overlayJson(point, 'green');
             overlayJson(AIS,'yellow');
@@ -509,8 +509,10 @@ getCoordsButton.addEventListener('click', () => {
 // Event handler for map click events
 function handleMapClick(event) {
     const coords = event.coordinate;
-
-    console.log('Coordinates:', coords);
+    const coord_display = document.getElementById("coord-display");
+    coord_display.innerHTML = 'Coordinates: ' + coords[0] + ', ' + coords[1];
+    console.log('Coordinates:', coords[0],coords[1]);
+    console.log(typeof coords);
     // Perform any other actions with the coordinates as needed
 }
 
@@ -555,6 +557,7 @@ function appendKmlFile(file) {
     const nameButton = document.createElement('button');
     nameButton.classList.add('kml-name-button');
     nameButton.textContent = file.name.slice(0, 32);
+
     kmlElements.push(nameButton);
     kmlElement.appendChild(nameButton);
     
@@ -582,9 +585,136 @@ function appendKmlFile(file) {
 // Function to highlight KML
 function highlightKML(file) {
     main_kml =file;
-    // sendForImages(file);
+    sendForImages(file);
     // parse_KML(file);
     parseKml(file);
+
+    // console.log(file.length);
+    // for(let i = 0; i < file.length; i++) 
+    // {
+        // const file = file[i];
+        // console.log(file);
+        // const reader = new FileReader();
+        // reader.onload = function (event) {
+        //     const buffer = event.target.result;
+        //     JSZip.loadAsync(buffer).then(function (zip) {
+        //         // Extract and parse KML
+        //         const kmlFile = zip.file(/\.kml$/i)[0];
+        //         if (kmlFile) {
+        //             kmlFile.async('text').then(function (kmlData) {
+        //                 parse_KML(kmlData);
+        //             });
+        //         }
+
+        //         // Extract images
+        //         zip.forEach(function (relativePath, zipEntry) {
+        //             if (relativePath.match(/\.(jpg|jpeg|png)$/i)) {
+        //                 zipEntry.async('base64').then(function (data) {
+        //                     addImageOverlayFromDataUrl(data);
+        //                 });
+        //             }
+        //         });
+        //     });
+        // };
+        // reader.readAsArrayBuffer(file);
+    // }
+
+
+//     const reader = new FileReader();
+// reader.onload = function (event) {
+//     const buffer = event.target.result;
+//     JSZip.loadAsync(buffer).then(function (zip) {
+//         // Extract and parse KML
+//         const kmlFile = zip.file(/\.kml$/i)[0];
+//         if (kmlFile) {
+//             kmlFile.async('text').then(function (kmlData) {
+//                 parse_KML(kmlData);
+//             });
+//         }
+
+//         // Extract images
+//         zip.forEach(function (relativePath, zipEntry) {
+//             if (relativePath.match(/\.(jpg|jpeg|png)$/i)) {
+//                 zipEntry.async('base64').then(function (data) {
+//                     // Convert base64 image data to GeoJSON format
+//                     const featureData = {
+//                         type: 'Feature',
+//                         geometry: {
+//                             type: 'Point',
+//                             coordinates: [0, 0] // Set coordinates appropriately
+//                         },
+//                         properties: {
+//                             base64ImageData: data // Attach base64 image data to properties
+//                         }
+//                     };
+
+//                     // Overlay the image using overlayJson function
+//                     overlayJson(featureData, '#000000'); // Set color appropriately
+//                 });
+//             }
+//         });
+//     });
+// };
+// reader.readAsArrayBuffer(file);
+
+
+
+const reader = new FileReader();
+reader.onload = function (event) {
+    const buffer = event.target.result;
+    JSZip.loadAsync(buffer).then(function (zip) {
+        // Extract and parse KML
+        const kmlFile = zip.file(/\.kml$/i)[0];
+        if (kmlFile) {
+            kmlFile.async('text').then(function (kmlData) {
+                parse_KML(kmlData);
+            });
+        }
+
+        // Extract images
+        zip.forEach(function (relativePath, zipEntry) {
+            if (relativePath.match(/\.(jpg|jpeg|png)$/i)) {
+                zipEntry.async('base64').then(function (data) {
+                    // Convert base64 image data to GeoJSON format
+                    const featureData = {
+                        type: 'FeatureCollection',
+                        features: [{
+                            type: 'Feature',
+                            geometry: {
+                                type: 'Point',
+                                coordinates: [0, 0] // Set coordinates appropriately
+                            },
+                            properties: {
+                                base64ImageData: data // Attach base64 image data to properties
+                            }
+                        }]
+                    };
+
+                    // Overlay the image using overlayJson function
+                    // Pass an empty color to not display pins
+                    overlayJson(featureData, ''); // Pass an empty color
+                });
+            }
+        });
+    });
+};
+reader.readAsArrayBuffer(file);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // Implement highlighting logic
     const kmlElements = Array.from(kmlContainer.children);
     kmlElements.forEach(element => {
@@ -956,3 +1086,162 @@ function mainkml(kmlData)
 
 
 
+// kmlFileInput.addEventListener('change', function (event) {
+//     const files = event.target.files;
+//     console.log(files);
+//     for (let i = 0; i < files.length; i++) {
+//         const file = files[i];
+//         console.log(file);
+//         const reader = new FileReader();
+//         reader.onload = function (event) {
+//             const buffer = event.target.result;
+//             JSZip.loadAsync(buffer).then(function (zip) {
+//                 zip.file(/\.kml$/i)[0].async('text').then(function (kmlData) {
+//                     parse_KML(kmlData);
+//                 });
+//             });
+//         };
+//         reader.readAsArrayBuffer(file);
+//     }
+// });
+function parse_KML(kmlData) {
+    try {
+        const parser = new DOMParser();
+        const kmlDoc = parser.parseFromString(kmlData, 'text/xml');
+        const groundOverlays = kmlDoc.querySelectorAll('GroundOverlay');
+        
+        groundOverlays.forEach(groundOverlay => {
+            const imageUrl = groundOverlay.querySelector('Icon href').textContent;
+            const latLonBox = groundOverlay.querySelector('LatLonBox');
+            const north = parseFloat(latLonBox.querySelector('north').textContent);
+            const south = parseFloat(latLonBox.querySelector('south').textContent);
+            const east = parseFloat(latLonBox.querySelector('east').textContent);
+            const west = parseFloat(latLonBox.querySelector('west').textContent);
+            
+            addImageOverlayFromHref(imageUrl, west, south, east, north);
+        });
+        
+        const vectorSource = new VectorSource({
+            features: new KML().readFeatures(kmlData, {
+            dataProjection: 'EPSG:4326',  // Projection of the KML data
+            featureProjection: 'EPSG:3857'  // Projection for the features
+          })
+        });
+        const vectorLayer = new VectorLayer({
+            source: vectorSource
+        });
+        map.addLayer(vectorLayer);
+    } catch (error) {
+        console.error('Error parsing KML and adding image overlay:', error);
+    }
+}
+
+function addImageOverlayFromHref(href, west, south, east, north) 
+{
+    const url = "./";
+    const newPath = url + href;
+    const newPathUrl = newPath.replace(/\s/g, "");
+    const imageOverlay = new ImageLayer({
+        source: new ImageStatic({
+            url: newPathUrl,
+            projection: 'EPSG:4326',
+            imageExtent: [west, south, east, north]
+        })
+    });
+    map.addLayer(imageOverlay);
+}
+function getKMLData(buffer) {
+    let kmlData;
+    zip.load(buffer);
+    const kmlFile = zip.file(/\.kml$/i)[0];
+    if (kmlFile) {
+        kmlData = kmlFile.asText();
+        // console.log(kmlData);
+    }
+    return kmlData;
+}
+
+function getKMLImage(href) {
+    console.log(href)
+    const index = window.location.href.lastIndexOf('/');
+    if (index !== -1) {
+        const kmlFile = zip.file(href.slice(index + 1));
+        console.log(kmlFile);
+        if (kmlFile) {
+            
+            return URL.createObjectURL(new Blob([kmlFile.asArrayBuffer()]));
+            
+        }
+    }
+    console.log(href);
+    return href;
+}
+
+class KMZ extends KML {
+    constructor(opt_options) {
+        const options = opt_options || {};
+        options.iconUrlFunction = getKMLImage;
+        super(options);
+    }
+    
+    getType() {
+        return 'arraybuffer';
+    }
+    
+    readFeature(source, options) {
+        const kmlData = getKMLData(source);
+        return super.readFeature(kmlData, options);
+    }
+    
+    readFeatures(source, options) {
+        const kmlData = getKMLData(source);
+        console.log(kmlData);
+        parse_KML(kmlData);
+        // kmlData.then(data => parseKML(data, event.file.name)).catch(error => console.error('Error parsing KML:', error));
+        
+        return super.readFeatures(kmlData, options);
+    }
+}
+
+
+// kmlFileInput.addEventListener('change', function (event) {
+//     const files = event.target.files;
+//     console.log(files);
+//     for (let i = 0; i < files.length; i++) {
+//         const file = files[i];
+//         console.log(file);
+//         const reader = new FileReader();
+//         reader.onload = function (event) {
+//             const buffer = event.target.result;
+//             JSZip.loadAsync(buffer).then(function (zip) {
+//                 // Extract and parse KML
+//                 const kmlFile = zip.file(/\.kml$/i)[0];
+//                 if (kmlFile) {
+//                     kmlFile.async('text').then(function (kmlData) {
+//                         parse_KML(kmlData);
+//                     });
+//                 }
+
+//                 // Extract images
+//                 zip.forEach(function (relativePath, zipEntry) {
+//                     if (relativePath.match(/\.(jpg|jpeg|png)$/i)) {
+//                         zipEntry.async('base64').then(function (data) {
+//                             addImageOverlayFromDataUrl(data);
+//                         });
+//                     }
+//                 });
+//             });
+//         };
+//         reader.readAsArrayBuffer(file);
+//     }
+// });
+
+function addImageOverlayFromDataUrl(dataUrl) {
+    const imageOverlay = new ImageLayer({
+        source: new ImageStatic({
+            url: dataUrl,
+            projection: 'EPSG:4326' // Assuming the images are in WGS 84 projection
+        })
+    });
+    map.addLayer(imageOverlay);
+}
