@@ -195,7 +195,7 @@ function sendDataToServer(variable1,variable2) {
             })
             document.getElementById(csv_name+'bufferButton').addEventListener("click",function()
             {
-                overlayJson(buffer, 'lightblue');
+                overlayJson(buffer, 'rgba(173, 216, 230, 0.2)');
                
             })
 
@@ -502,6 +502,8 @@ getCoordsButton.addEventListener('click', () => {
     } else {
         // Remove the click event listener from the map
         map.un('click', handleMapClick);
+        const stop_display = document.getElementById("coord-display");
+        stop_display.innerHTML ='';
         getCoordsButton.textContent = 'Get Coordinates'; // Change button text back
     }
 });
@@ -569,11 +571,25 @@ function appendKmlFile(file) {
     kmlElement.appendChild(eyeIcon);
 
     // Add trash icon
+    // const trashIcon = document.createElement('span');
+    // trashIcon.textContent = '🗑️';
+    // trashIcon.classList.add('remove-icon');
+    // trashIcon.addEventListener('click', () => removeKML(kmlElement, file));
+    // kmlElement.appendChild(trashIcon);
     const trashIcon = document.createElement('span');
-    trashIcon.textContent = '🗑️';
-    trashIcon.classList.add('remove-icon');
-    trashIcon.addEventListener('click', () => removeKML(kmlElement, file));
-    kmlElement.appendChild(trashIcon);
+trashIcon.classList.add('remove-icon');
+trashIcon.addEventListener('click', () => removeKML(kmlElement, file));
+
+// Create an <img> element for the SVG icon
+const imgElement = document.createElement('img');
+imgElement.src = '/close.svg'; // Set the src attribute to the SVG file path
+
+// Append the <img> element to the trashIcon span
+trashIcon.appendChild(imgElement);
+
+// Append the trashIcon to the kmlElement
+kmlElement.appendChild(trashIcon);
+
 
     // Set data attribute with file name
     kmlElement.dataset.fileName = file.name;
@@ -680,10 +696,10 @@ reader.onload = function (event) {
                         type: 'FeatureCollection',
                         features: [{
                             type: 'Feature',
-                            geometry: {
-                                type: 'Point',
-                                coordinates: [0, 0] // Set coordinates appropriately
-                            },
+                            // geometry: {
+                            //     type: 'Point',
+                            //     coordinates: [0, 0] // Set coordinates appropriately
+                            // },
                             properties: {
                                 base64ImageData: data // Attach base64 image data to properties
                             }

@@ -1,1 +1,0 @@
-conda activate deadship && C: && cd C:\Users\Training\Desktop\file_2_test\DEAD_SHIP && python app.py
