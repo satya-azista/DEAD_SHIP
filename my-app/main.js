@@ -24,6 +24,14 @@ let cstext=undefined;
 // let csv_line=undefined;
 // let csv_point=undefined;
 let csv_name=undefined;
+let point_data=undefined;
+let line_data=undefined;
+let buffer_data=undefined;
+let imo_ship=undefined;
+let dead_ship=undefined;
+let two_point=undefined;
+let image_overlay=undefined;
+let v_l=undefined;
 // const mousePositionControl = new MousePosition({
 //     projection: 'EPSG:4326',
 //     className: 'custom-mouse-position',
@@ -173,30 +181,54 @@ function sendDataToServer(variable1,variable2) {
             const ship_point= data.ship_point;
             const verify_ais = data.verify_ais;
             const AIS=data.AIS;
+            buffer_data=data.buffer;
+            line_data=data.line;
+            point_data=data.ais_point;
+            imo_ship=data.point;
+            dead_ship=data.ship_point;
+            two_point=data.AIS;
             // const { ais_point, point, line, ais_point, ship_point, verify_ais } = data;
 
             const correlateAis = document.getElementById("correlateAis")
             correlateAis.addEventListener('click', function()
             {
-                overlayJson(ship_point, 'red');
-                overlayJson(point, 'green');
-                overlayJson(AIS, 'yellow');
+                // overlayJson(ship_point, 'red');
+                // overlayJson(point, 'green');
+                // overlayJson(AIS, 'yellow');
+                overlayJson(dead_ship, 'red');
+                overlayJson(imo_ship, 'green');
+                overlayJson(two_point, 'yellow');
             })
 
-            document.getElementById(csv_name+'pointButton').addEventListener("click",function()
-            {
-                overlayJson(ais_point, 'blue');
+            // document.getElementById(csv_name+'pointButton').addEventListener("click",function()
+            // {
+            //     overlayJson(ais_point, 'blue');
                
+            // })
+            // document.getElementById(csv_name+'lineButton').addEventListener("click",function()
+            // {
+            //     overlayJson(line, '#006666');
+               
+            // })
+            // document.getElementById(csv_name+'bufferButton').addEventListener("click",function()
+            // {
+            //     overlayJson(buffer, 'rgba(173, 216, 230, 0.2)');
+               
+            // })
+            ais_points.addEventListener('click', function()
+            {
+                // overlayJson(ais_point, 'blue');
+                overlayJson(point_data, 'blue');
             })
-            document.getElementById(csv_name+'lineButton').addEventListener("click",function()
+            ais_line.addEventListener('click', function()
             {
-                overlayJson(line, '#006666');
-               
+                // overlayJson(line, '#006666');
+                overlayJson(line_data, '#006666');
             })
-            document.getElementById(csv_name+'bufferButton').addEventListener("click",function()
+            ais_buffer.addEventListener('click', function()
             {
-                overlayJson(buffer, 'rgba(173, 216, 230, 0.2)');
-               
+                // overlayJson(buffer, 'rgba(173, 216, 230, 0.2)');
+                overlayJson(buffer_data, 'rgba(173, 216, 230, 0.2)');
             })
 
             // map.getLayers().forEach(function (layer) {
@@ -577,8 +609,8 @@ function appendKmlFile(file) {
     // trashIcon.addEventListener('click', () => removeKML(kmlElement, file));
     // kmlElement.appendChild(trashIcon);
     const trashIcon = document.createElement('span');
-trashIcon.classList.add('remove-icon');
-trashIcon.addEventListener('click', () => removeKML(kmlElement, file));
+    trashIcon.classList.add('remove-icon');
+    trashIcon.addEventListener('click', () => removeKML(kmlElement, file));
 
 // Create an <img> element for the SVG icon
 const imgElement = document.createElement('img');
@@ -600,91 +632,22 @@ kmlElement.appendChild(trashIcon);
 
 // Function to highlight KML
 function highlightKML(file) {
+    map.getLayers().forEach(function (layer) {
+                if (layer instanceof VectorLayer) {
+                    map.removeLayer(layer);
+                }
+            });
+if(image_overlay!=undefined)
+{
+    map.removeLayer(image_overlay);
+}
+if(v_l!=undefined)
+{
+    map.removeLayer(v_l);
+}
     main_kml =file;
-    map.getLayers().forEach(function (layer) {
-                if (layer instanceof VectorLayer) {
-                    map.removeLayer(layer);
-                }
-            });
     sendForImages(file);
-    // parse_KML(file);
-    map.getLayers().forEach(function (layer) {
-                if (layer instanceof VectorLayer) {
-                    map.removeLayer(layer);
-                }
-            });
     parseKml(file);
-
-    // console.log(file.length);
-    // for(let i = 0; i < file.length; i++) 
-    // {
-        // const file = file[i];
-        // console.log(file);
-        // const reader = new FileReader();
-        // reader.onload = function (event) {
-        //     const buffer = event.target.result;
-        //     JSZip.loadAsync(buffer).then(function (zip) {
-        //         // Extract and parse KML
-        //         const kmlFile = zip.file(/\.kml$/i)[0];
-        //         if (kmlFile) {
-        //             kmlFile.async('text').then(function (kmlData) {
-        //                 parse_KML(kmlData);
-        //             });
-        //         }
-
-        //         // Extract images
-        //         zip.forEach(function (relativePath, zipEntry) {
-        //             if (relativePath.match(/\.(jpg|jpeg|png)$/i)) {
-        //                 zipEntry.async('base64').then(function (data) {
-        //                     addImageOverlayFromDataUrl(data);
-        //                 });
-        //             }
-        //         });
-        //     });
-        // };
-        // reader.readAsArrayBuffer(file);
-    // }
-
-
-//     const reader = new FileReader();
-// reader.onload = function (event) {
-//     const buffer = event.target.result;
-//     JSZip.loadAsync(buffer).then(function (zip) {
-//         // Extract and parse KML
-//         const kmlFile = zip.file(/\.kml$/i)[0];
-//         if (kmlFile) {
-//             kmlFile.async('text').then(function (kmlData) {
-//                 parse_KML(kmlData);
-//             });
-//         }
-
-//         // Extract images
-//         zip.forEach(function (relativePath, zipEntry) {
-//             if (relativePath.match(/\.(jpg|jpeg|png)$/i)) {
-//                 zipEntry.async('base64').then(function (data) {
-//                     // Convert base64 image data to GeoJSON format
-//                     const featureData = {
-//                         type: 'Feature',
-//                         geometry: {
-//                             type: 'Point',
-//                             coordinates: [0, 0] // Set coordinates appropriately
-//                         },
-//                         properties: {
-//                             base64ImageData: data // Attach base64 image data to properties
-//                         }
-//                     };
-
-//                     // Overlay the image using overlayJson function
-//                     overlayJson(featureData, '#000000'); // Set color appropriately
-//                 });
-//             }
-//         });
-//     });
-// };
-// reader.readAsArrayBuffer(file);
-
-
-
 const reader = new FileReader();
 reader.onload = function (event) {
     const buffer = event.target.result;
@@ -725,22 +688,6 @@ reader.onload = function (event) {
     });
 };
 reader.readAsArrayBuffer(file);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     // Implement highlighting logic
     const kmlElements = Array.from(kmlContainer.children);
     kmlElements.forEach(element => {
@@ -772,6 +719,7 @@ function removeKML(kmlElement, file) {
 
 const csvFileInput = document.getElementById('csv_Input');
 const csvContainer = document.getElementById('csvContainer');
+const csvElements = Array.from(csvContainer.children);
 // Function to handle file upload
 csvFileInput.addEventListener('change', handleCsvFileUpload);
 function handleCsvFileUpload(event) 
@@ -809,8 +757,9 @@ function appendCsvFile(file) {
     const nameButton = document.createElement('button');
     nameButton.classList.add('csv-name-button');
     nameButton.textContent = file.name.slice(0, 32);
-    csv_name=nameButton.textContent;
-    nameButton.addEventListener('click', () => toggleCSVOptions(csvElement));
+    // csv_name=nameButton.textContent;
+    // nameButton.addEventListener('click', () => toggleCSVOptions(csvElement));
+   csvElements.push(nameButton);
     csvElement.appendChild(nameButton);
 
     // Add eye icon
@@ -822,11 +771,18 @@ function appendCsvFile(file) {
 
     // Add trash icon
     const trashIcon = document.createElement('span');
-    trashIcon.textContent = '🗑️';
+    // trashIcon.textContent = '🗑️';
+    // trashIcon.classList.add('remove-icon');
+    // trashIcon.addEventListener('click', () => removeCSV(csvElement, file));
+    // csvElement.appendChild(trashIcon);
     trashIcon.classList.add('remove-icon');
     trashIcon.addEventListener('click', () => removeCSV(csvElement, file));
-    csvElement.appendChild(trashIcon);
 
+    // Create an <img> element for the SVG icon
+    const imgElement = document.createElement('img');
+    imgElement.src = '/close.svg'; // Set the src attribute to the SVG file path
+    trashIcon.appendChild(imgElement);
+    csvElement.appendChild(trashIcon);
     // Set data attribute with file name
     csvElement.dataset.fileName = file.name;
 
@@ -870,10 +826,6 @@ function createOptionButton(text, onClickHandler) {
     button.addEventListener('click', onClickHandler);
     return button;
 }
-
-
-
-
 
 
 function selectCSVOption(option) {
@@ -1016,120 +968,6 @@ function mainkml(kmlData)
 }
 
 
-
-
-// // Define the vector source
-// const source = new VectorSource();
-
-// // Define the vector layer
-// const vector = new VectorLayer({
-//   source: source,
-//   style: {
-//     'fill-color': 'rgba(255, 255, 255, 0.2)',
-//     'stroke-color': '#ffcc33',
-//     'stroke-width': 2,
-//     'circle-radius': 7,
-//     'circle-fill-color': '#ffcc33',
-//   },
-// });
-
-// // Function to format length output
-// const formatLength = function (line) {
-//   const length = getLength(line);
-//   let output;
-//   if (length > 100) {
-//     output = Math.round((length / 1000) * 100) / 100 + ' ' + 'km';
-//   } else {
-//     output = Math.round(length * 100) / 100 + ' ' + 'm';
-//   }
-//   return output;
-// };
-
-// // Function to create interaction for measuring length
-// function addInteraction() {
-//   const draw = new Draw({
-//     source: source,
-//     type: 'LineString',
-//     style: new Style({
-//       stroke: new Stroke({
-//         color: 'rgba(255, 0, 0, 0.7)',
-//         width: 2,
-//       }),
-//     }),
-//   });
-//   map.addInteraction(draw);
-
-//   let measureTooltipElement;
-//   let measureTooltip;
-
-//   draw.on('drawstart', function (evt) {
-//     measureTooltipElement = document.createElement('div');
-//     measureTooltipElement.className = 'ol-tooltip ol-tooltip-measure';
-//     measureTooltip = new Overlay({
-//       element: measureTooltipElement,
-//       offset: [0, -15],
-//       positioning: 'bottom-center',
-//       stopEvent: false,
-//       insertFirst: false,
-//     });
-//     map.addOverlay(measureTooltip);
-
-//     let sketch = evt.feature;
-
-//     let listener;
-//     sketch.on('change', function (evt) {
-//       const geom = evt.target.getGeometry();
-//       const output = formatLength(geom);
-//       const tooltipCoord = geom.getLastCoordinate();
-//       measureTooltipElement.innerHTML = output;
-//       measureTooltip.setPosition(tooltipCoord);
-//     });
-
-//     draw.on('drawend', function () {
-//       measureTooltipElement.className = 'ol-tooltip ol-tooltip-static';
-//       measureTooltip.setOffset([0, -7]);
-//       sketch = null;
-//       measureTooltipElement = null;
-//       createMeasureTooltip();
-//       unByKey(listener);
-//     });
-//   });
-
-//   draw.on('pointermove', function (evt) {
-//     if (evt.dragging) {
-//       return;
-//     }
-//     const helpMsg = 'Click to start drawing';
-//     measureTooltipElement.innerHTML = helpMsg;
-//     measureTooltip.setPosition(evt.coordinate);
-//   });
-// }
-
-// // Create interaction for measuring length when the button is clicked
-// document.getElementById('measureLength').addEventListener('click', function () {
-//   addInteraction();
-// });
-
-
-
-// kmlFileInput.addEventListener('change', function (event) {
-//     const files = event.target.files;
-//     console.log(files);
-//     for (let i = 0; i < files.length; i++) {
-//         const file = files[i];
-//         console.log(file);
-//         const reader = new FileReader();
-//         reader.onload = function (event) {
-//             const buffer = event.target.result;
-//             JSZip.loadAsync(buffer).then(function (zip) {
-//                 zip.file(/\.kml$/i)[0].async('text').then(function (kmlData) {
-//                     parse_KML(kmlData);
-//                 });
-//             });
-//         };
-//         reader.readAsArrayBuffer(file);
-//     }
-// });
 function parse_KML(kmlData) {
     try {
         const parser = new DOMParser();
@@ -1159,7 +997,9 @@ function parse_KML(kmlData) {
         const vectorLayer = new VectorLayer({
             source: vectorSource
         });
-        map.addLayer(vectorLayer);
+        v_l=vectorLayer;
+        // map.addLayer(vectorLayer);
+        map.addLayer(v_l);
     } catch (error) {
         console.error('Error parsing KML and adding image overlay:', error);
     }
@@ -1177,7 +1017,10 @@ function addImageOverlayFromHref(href, west, south, east, north)
             imageExtent: [west, south, east, north]
         })
     });
-    map.addLayer(imageOverlay);
+    image_overlay=imageOverlay;
+    // map.addLayer(imageOverlay);
+    map.addLayer(image_overlay);
+    // overlayJson(image_overlay,'');
 }
 function getKMLData(buffer) {
     let kmlData;
@@ -1230,47 +1073,4 @@ class KMZ extends KML {
         
         return super.readFeatures(kmlData, options);
     }
-}
-
-
-// kmlFileInput.addEventListener('change', function (event) {
-//     const files = event.target.files;
-//     console.log(files);
-//     for (let i = 0; i < files.length; i++) {
-//         const file = files[i];
-//         console.log(file);
-//         const reader = new FileReader();
-//         reader.onload = function (event) {
-//             const buffer = event.target.result;
-//             JSZip.loadAsync(buffer).then(function (zip) {
-//                 // Extract and parse KML
-//                 const kmlFile = zip.file(/\.kml$/i)[0];
-//                 if (kmlFile) {
-//                     kmlFile.async('text').then(function (kmlData) {
-//                         parse_KML(kmlData);
-//                     });
-//                 }
-
-//                 // Extract images
-//                 zip.forEach(function (relativePath, zipEntry) {
-//                     if (relativePath.match(/\.(jpg|jpeg|png)$/i)) {
-//                         zipEntry.async('base64').then(function (data) {
-//                             addImageOverlayFromDataUrl(data);
-//                         });
-//                     }
-//                 });
-//             });
-//         };
-//         reader.readAsArrayBuffer(file);
-//     }
-// });
-
-function addImageOverlayFromDataUrl(dataUrl) {
-    const imageOverlay = new ImageLayer({
-        source: new ImageStatic({
-            url: dataUrl,
-            projection: 'EPSG:4326' // Assuming the images are in WGS 84 projection
-        })
-    });
-    map.addLayer(imageOverlay);
 }
