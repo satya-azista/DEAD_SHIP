@@ -197,7 +197,7 @@ function sendDataToServer(variable1,variable2) {
                 // overlayJson(AIS, 'yellow');
                 overlayJson(dead_ship, 'red');
                 overlayJson(imo_ship, 'green');
-                overlayJson(two_point, 'yellow');
+                // overlayJson(two_point, 'yellow');
             })
 
             // document.getElementById(csv_name+'pointButton').addEventListener("click",function()
@@ -238,7 +238,7 @@ function sendDataToServer(variable1,variable2) {
             // });
             // overlayJson(ship_point, 'red')
             // overlayJson(point, 'green');
-            // overlayJson(AIS,'yellow');
+            overlayJson(two_point,'yellow');
             verify_ais_csv = verify_ais;
             csvToTable(verify_ais_csv);
 
