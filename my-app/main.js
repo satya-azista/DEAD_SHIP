@@ -601,8 +601,18 @@ kmlElement.appendChild(trashIcon);
 // Function to highlight KML
 function highlightKML(file) {
     main_kml =file;
+    map.getLayers().forEach(function (layer) {
+                if (layer instanceof VectorLayer) {
+                    map.removeLayer(layer);
+                }
+            });
     sendForImages(file);
     // parse_KML(file);
+    map.getLayers().forEach(function (layer) {
+                if (layer instanceof VectorLayer) {
+                    map.removeLayer(layer);
+                }
+            });
     parseKml(file);
 
     // console.log(file.length);
@@ -696,10 +706,10 @@ reader.onload = function (event) {
                         type: 'FeatureCollection',
                         features: [{
                             type: 'Feature',
-                            // geometry: {
-                            //     type: 'Point',
-                            //     coordinates: [0, 0] // Set coordinates appropriately
-                            // },
+                            geometry: {
+                                type: 'Point',
+                                coordinates: [0, 0] // Set coordinates appropriately
+                            },
                             properties: {
                                 base64ImageData: data // Attach base64 image data to properties
                             }
@@ -708,7 +718,7 @@ reader.onload = function (event) {
 
                     // Overlay the image using overlayJson function
                     // Pass an empty color to not display pins
-                    overlayJson(featureData, ''); // Pass an empty color
+                    // overlayJson(featureData, 'white'); // Pass an empty color
                 });
             }
         });
@@ -1142,6 +1152,9 @@ function parse_KML(kmlData) {
             dataProjection: 'EPSG:4326',  // Projection of the KML data
             featureProjection: 'EPSG:3857'  // Projection for the features
           })
+        });
+        vectorSource.getFeatures().forEach(feature =>{
+            feature.setStyle(null);
         });
         const vectorLayer = new VectorLayer({
             source: vectorSource
