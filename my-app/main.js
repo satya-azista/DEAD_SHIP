@@ -174,13 +174,13 @@ function sendDataToServer(variable1,variable2) {
             const verify_ais = data.verify_ais;
             const AIS=data.AIS;
             // const { ais_point, point, line, ais_point, ship_point, verify_ais } = data;
-            overlayJson(AIS, 'yellow');
 
             const correlateAis = document.getElementById("correlateAis")
             correlateAis.addEventListener('click', function()
             {
                 overlayJson(ship_point, 'red');
                 overlayJson(point, 'green');
+                overlayJson(AIS, 'yellow');
             })
 
             document.getElementById(csv_name+'pointButton').addEventListener("click",function()
@@ -206,7 +206,7 @@ function sendDataToServer(variable1,variable2) {
             // });
             // overlayJson(ship_point, 'red')
             // overlayJson(point, 'green');
-            overlayJson(AIS,'yellow');
+            // overlayJson(AIS,'yellow');
             verify_ais_csv = verify_ais;
             csvToTable(verify_ais_csv);
 
