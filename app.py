@@ -19,6 +19,7 @@ import xml.etree.ElementTree as ET
 import requests
 import psycopg2
 from PIL import Image
+from geopy.distance import distance
 app = Flask(__name__)
 CORS(app, origins='*')
 # CORS(app, resources={r"/api/*": {"origins": "http://127.0.0.1:5000"}})
