@@ -12,6 +12,7 @@ import { getLength } from 'ol/sphere.js';
 import { Draw } from 'ol/interaction.js';
 import Overlay from 'ol/Overlay';
 import { XYZ } from 'ol/source';
+// import OSM from 'ol/source/OSM';
 
 // import { text } from 'stream/consumers';
 const zip = new JSZip();
@@ -73,12 +74,22 @@ let v_l=undefined;
             ],
         }),
     });
-    
+const osmLayer = new TileLayer({
+  source: new OSM(),
+  visible: true
+});
+const satelliteLayer = new TileLayer({
+  source: new XYZ({
+    url: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'
+  }),
+});
     const map = new Map({
         controls: defaultControls().extend([mousePositionControl]),
         target: 'map',
         layers: [
-            arcgisTileLayer,
+            // arcgisTileLayer,
+            // osmLayer,
+            satelliteLayer
         ],
         view: new View({
             center: [0, 0],

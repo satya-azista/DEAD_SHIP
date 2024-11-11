@@ -13,73 +13,44 @@
  
     <title> OpenLayers </title>
     <style>
-        body {
-            background-color: #f2f2f2;
-            /* Classy light gray background */
-        }
- 
-        .container {
-            width: 100%;
-            background-color: black;
-        }
- 
-        .navbar {
+        .header {
             background-color: #333;
-            /* Classy dark gray navbar */
-            margin-bottom: 0;
-            border-radius: 0;
-            display: flex;
-            font-weight: bold;
-            justify-content: space-evenly;
-            align-items: center;
             padding: 10px;
         }
- 
-        .navbar-nav {
-            text-align: center;
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
- 
-        .navbar-nav>li {
-            display: inline-block;
-            float: none;
-            padding: 1px 10px;
+        .navbar-brand img {
+            height: 40px;
+            margin-right: 10px;
         }
- 
-        .row.content {
-            height: 450px;
+        .navbar-menu {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
- 
-        .buttonKmz,
-        .buttonCsv,
-        .button {
-            background-color: #008080;
-            border: 2px solid #006666;
+        .button, .buttonKmz, .buttonCsv {
+            background-color: #7088E5;
             color: white;
-            margin-right: 2px;
-            border-radius: 2px;
-            padding: 2px 3px;
-            margin-top: 2px;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 4px;
         }
- 
-        .sidenav {
-            padding-top: 20px;
-            background-color: #333;
-            /* Classy dark gray sidenav */
-            height: 100vh;
-            margin-top: 5px;
+        .button:hover, .buttonKmz:hover, .buttonCsv:hover {
+            background-color: #777;
         }
- 
         #aisInfo {
             border: 1px solid #ccc;
             border-radius: 3px;
             padding: 5px;
-            background-color: #666;
-            /* Classy medium gray */
-            max-width: 300px;
-            font-size: 10px;
+            background-color: #fff;
+            max-width: 430px;
+            font-size: 15px;
             font-weight: bold;
             color: #fff;
-            /* White text */
         }
  
         #aisInfo table {
@@ -110,27 +81,25 @@
         }
  
         #aisAttributes {
-            background-color: #666;
-            /* Classy medium gray */
+            background-color: #fff;
             color: white;
             padding: 5px;
         }
  
-        .kmlData,
-        .csvData {
+         .kmlData, .csvData {
+            flex: 1;
+            background-color: #606060;
+            border-radius: 5px;
+            padding: 10px;
+            box-shadow: 0px 0px 5px rgba(0,0,0,0.2);
+            overflow-y: auto;
             height: 45vh;
-            border: 1px solid #ccc;
-            /* Light gray border */
-            color: #333;
-            /* Dark gray text */
-            margin-bottom: 15px;
         }
- 
         #map {
             margin-top: 10px;
             width: 100%;
             height: 300px;
-            border: 2px solid #006666;
+            border: 2px solid #fff;
         }
  
         #table-container {
@@ -145,32 +114,28 @@
            
         }
         table,th,td {
-            border: 1px solid #006666;
+            border: 1px solid #7088E5;;
             padding: 4px 2px;
             color: #333;
-            /* Dark gray text */
         }
  
         th {
             position: sticky;
             top: 0;
-            background-color: #008080;
+            background-color: #7088E5;
             color: #fff;
         }
  
         #mouse-position {
             color: #333;
-            /* Dark gray text */
         }
  
         #csvHeading,
         #kmlHeading {
             padding: 3px;
             margin-top: 0px;
-            background-color: #008080;
-            /* Classy teal heading background */
+            background-color: #7088E5;;
             color: #fff;
-            /* White text */
         }
  
         .popup {
@@ -192,7 +157,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px 20px;
-            background-color: #2d6577;
+            background-color:#7088E5;
             color: white;
             border-bottom: 1px solid #ccc;
             position: sticky;
@@ -206,7 +171,7 @@
  
         .popup-content {
             padding: 20px;
-            background-color: #b2abcc;
+            background-color: #fffbfb;
             margin: 20px auto;
             width: 100%;
             border: 1px solid #f5f5f5;
@@ -220,7 +185,6 @@
             cursor: pointer;
             border-radius: 4px;
         }
- 
         .close:hover,
         .close:focus {
             color: rgb(250, 250, 250);
@@ -228,13 +192,6 @@
             text-decoration: none;
             cursor: pointer;
         }
- 
-        #logoApril {
-            margin-left: 500px;
-            width:300px;
-            height:100px;
-        }
- 
         .additionalButtons {
             width: max-content;
             margin: 5px;
@@ -242,14 +199,6 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-        }
- 
-        /* Style for the point, line, and buffer containers */
-        #point,
-        #line,
-        #buffer{    
-            align-items: center;
-            margin-bottom: 10px;
         }
         #coordinates-display {
             background-color: rgba(255, 255, 255, 0.8);
@@ -259,103 +208,98 @@
         }
         #coord-display{
             background-color: rgb(250, 242, 242);
-
+            color: #fff;
         }
         .kml-element {
-    display: flex;
-    align-items: center;
-    margin-bottom: 5px;
-}
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .kml-name-box {
+            width: 400px;
+            height: 20px;
+            background-color: #f0f0f0;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-.kml-name-box {
-    width: 400px;
-    height: 20px;
-    background-color: #f0f0f0;
-    margin-right: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.highlight-icon,
-.remove-icon {
-    margin-right: 10px;
-    cursor: pointer;
-}
-.csv-name-box {
-    width: 400px;
-    height: 20px;
-    background-color: #f0f0f0;
-    margin-right: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.csv-element {
-    display: flex;
-    align-items: center;
-    margin-bottom: 5px;
-}
+        .highlight-icon,
+        .remove-icon {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .csv-name-box {
+            width: 400px;
+            height: 20px;
+            background-color: #f0f0f0;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .csv-element {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
  
 <body>
-    <div class="container">
-        <nav class="navbar navbar-inverse">
-            <div class="container-fluid">
-                <div class="collapse navbar-collapse" id="myNavbar">
-                    <ul class="nav navbar-nav">
-                        <li><input type="file" id="fileInput" style="display: none;" accept=".kmz"></li>
-                        <li><label for="fileInput" class="buttonKmz">Add KMZ FILE</label></li>
-                        <li><input type="file" id="csv_Input" style="display: none;" accept=".csv"></li>
-                        <li><label for="csv_Input" class="buttonCsv">Add CSV FILE</label></li>
-                        <li><button class="button">Edit Data</button></li>
-                        <li><button class="button" id="measureLength">Measure Length</button></li>
-                        <li><button class="button" id="get_cords">Get Coordinates</button></li>
-                        <li><button id="correlateAis" class="button" >Correlate AIS</button></li>
-                        <li><button class="button" id="verify_ais_table">Verify AIS</button></li>
-                        <li><button class="button" id="ais_points">Point</button></li>
-                        <li><button class="button" id="ais_line">Line</button></li>
-                        <li><button class="button" id="ais_buffer">Buffer</button></li>
-                        <li><img id="logoApril" src="./APRIL.png" alt="april_logo" width="22px" height="28px"></li>
-                    </ul>
-                </div>
- 
+    <div class="header">
+        <div class="navbar">
+            <div class="navbar-menu">
+                <label for="fileInput" class="buttonKmz">Add KMZ FILE</label>
+                <input type="file" id="fileInput" style="display: none;" accept=".kmz">
+                <label for="csv_Input" class="buttonCsv">Add CSV FILE</label>
+                <input type="file" id="csv_Input" style="display: none;" accept=".csv">
+                <button class="button">Edit Data</button>
+                <button class="button" id="measureLength">Measure Length</button>
+                <button class="button" id="get_cords">Get Coordinates</button>
+                <button class="button" id="correlateAis">Correlate AIS</button>
+                <button class="button" id="verify_ais_table">Verify AIS</button>
+                <button class="button" id="ais_points">Point</button>
+                <button class="button" id="ais_line">Line</button>
+                <button class="button" id="ais_buffer">Buffer</button>
             </div>
-        </nav>
- 
-        <div class="container-fluid text-center">
-            <div class="row content">
-                <div class="col-sm-3 sidenav">
-                    <div class="leftContainer">
-                        <div class="kmlData">
-                            <h5 id="kmlHeading">KML Data</h5>
-                            <div id="kmlDataAll">
-                                 <div id="kmlContainer"></div>
-                            </div>
+            <!-- <div class="navbar-brand"> -->
+                <img id="logoApril" src="./APRIL.png" alt="April logo" style="width: 100px;height: 50px;">
+            <!-- </div> -->
+        </div>
+    </div>
+    <div class="container-fluid text-center main-content" style="background-color: #535353;">
+        <div class="row content">
+            <div class="col-sm-3 sidenav">
+                <div class="leftContainer">
+                    <div class="kmlData">
+                        <h5 id="kmlHeading">KML Data</h5>
+                        <div id="kmlDataAll">
+                            <div id="kmlContainer"></div>
                         </div>
-                        <div class="csvData">
-                            <h5 id="csvHeading">CSV data</h5>
-                            <div id="csvDataAll">
-                                <div id="csvContainer"></div>
-                            </div>
+                    </div>
+                    <div class="csvData">
+                        <h5 id="csvHeading">CSV data</h5>
+                        <div id="csvDataAll">
+                            <div id="csvContainer"></div>
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-6 text-left">
-                    <div id="map" style="height: 60vh; width: 100%;"></div>
-                    <div id="mouse-position"></div>
-                    <div id="coord-display"></div>
-                    <div id="table-container"></div>
-                </div>
-                <div class="col-sm-3 sidenav">
-                    <div class="rightContainer">
-                        <h6 id="aisAttributes" style="margin-top: 0;">AIS Attributes</h6>
-                        <!-- <img src="./ais.jpg" alt="ship" height="150px" width="300vw"> -->
-                        <div id="aisInfo"></div>
-                    </div>
+            </div>
+            <div class="col-sm-6 text-left">
+                <div id="map" style="height: 60vh; width: 100%;"></div>
+                <div id="mouse-position" style="color: #fff;"></div>
+                <div id="coord-display"></div>
+                <div id="table-container"></div>
+            </div>
+            <div class="col-sm-3 sidenav">
+                <div class="rightContainer">
+                    <h6 id="aisAttributes" style="margin-top: 0; background-color: #7088E5;">AIS Attributes</h6>
+                    <div id="aisInfo"></div>
                 </div>
             </div>
+        </div>
         </div>
     </div>
     <div id="popup" class="popup">
@@ -371,7 +315,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.6.1/jszip.min.js"></script>
     <div id="coordinates-display" style="display: none;">
         <p id="coordinates"></p>
-    </div>
+    <!-- </div> -->
     <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
 </body>
  
