@@ -12,18 +12,11 @@ import { getLength } from 'ol/sphere.js';
 import { Draw } from 'ol/interaction.js';
 import Overlay from 'ol/Overlay';
 import { XYZ } from 'ol/source';
-// import OSM from 'ol/source/OSM';
-
-// import { text } from 'stream/consumers';
 const zip = new JSZip();
- 
 let main_kml = undefined;
 let main_csv = undefined;
 let verify_ais_csv = undefined;
 let cstext=undefined;
-// let csv_buffer=undefined;
-// let csv_line=undefined;
-// let csv_point=undefined;
 let csv_name=undefined;
 let point_data=undefined;
 let line_data=undefined;
@@ -33,47 +26,22 @@ let dead_ship=undefined;
 let two_point=undefined;
 let image_overlay=undefined;
 let v_l=undefined;
-// const mousePositionControl = new MousePosition({
-//     projection: 'EPSG:4326',
-//     className: 'custom-mouse-position',
-//     target: document.getElementById('mouse-position'),
-// })
-// const map = new Map({
-//     controls: defaultControls().extend([mousePositionControl]),
-//     target: 'map',
-//     layers: [
-//         new TileLayer({
-//             // source: new OSM(),
-//             source: arcgisTileLayer,
-//         }),
-//     ],
-//     view: new View({
-//         center: [0, 0],
-//         zoom: 2,
-//     }),
-// });
-// const mousePositionControl = new MousePosition({
-    //     projection: 'EPSG:4326',
-    //     className: 'custom-mouse-position',
-    //     target: document.getElementById('mouse-position'),
-    // });
-    
-    const mousePositionControl = new MousePosition({
-        projection: 'EPSG:4326',
-        className: 'custom-mouse-position',
-        target: document.getElementById('mouse-position'),
-    });
-    
-    const arcgisTileLayer = new TileLayer({
-        source: new XYZ({
-            url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-            attributions: [
-                '&copy; <a href="https://www.arcgis.com/">Esri</a>',
-                'Tiles &copy; <a href="https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer">ArcGIS</a>',
-                'Tiles &copy; <a href="https://www.esri.com/en-us/home">Esri</a>'
-            ],
-        }),
-    });
+const mousePositionControl = new MousePosition({
+    projection: 'EPSG:4326',
+    className: 'custom-mouse-position',
+    target: document.getElementById('mouse-position'),
+});
+
+const arcgisTileLayer = new TileLayer({
+    source: new XYZ({
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        attributions: [
+            '&copy; <a href="https://www.arcgis.com/">Esri</a>',
+            'Tiles &copy; <a href="https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer">ArcGIS</a>',
+            'Tiles &copy; <a href="https://www.esri.com/en-us/home">Esri</a>'
+        ],
+    }),
+});
 const osmLayer = new TileLayer({
   source: new OSM(),
   visible: true
@@ -86,75 +54,13 @@ const satelliteLayer = new TileLayer({
     const map = new Map({
         controls: defaultControls().extend([mousePositionControl]),
         target: 'map',
-        layers: [
-            // arcgisTileLayer,
-            // osmLayer,
-            satelliteLayer
-        ],
+        layers: [satelliteLayer],
         view: new View({
             center: [0, 0],
             zoom: 2,
         }),
     });
-    
- 
-
-// function addImageOverlayFromHref(href, west, south, east, north, buttonId) {
-//     const url = "./";
-//     const newPath = url + href;
-//     const newPathUrl = newPath.replace(/\s/g, "");
-//     const imageOverlay = new ImageLayer({
-//         source: new ImageStatic({
-//             url: newPathUrl,
-//             projection: 'EPSG:4326',
-//             imageExtent: [west, south, east, north]
-//         })
-//     });
-//     map.addLayer(imageOverlay);
- 
-// }
-// const correlateAis = document.getElementById("correlateAis")
-// correlateAis.addEventListener('click', function()
-// {
-//     if(main_kml==undefined)
-//     {
-//         alert("Select KMZ");
-//     }
-//     else if(cstext==undefined)
-//     {
-//         alert("Select CSV")
-//     }
-//     else if(main_kml==undefined && cstext==undefined)
-//     {
-//         alert("select KMZ and CSV")
-//     }
-//     else
-//     {
-//         sendDataToServer(main_kml,cstext);
-//     }
-
-// verify_ais_csv = verify_ais;
-// csvToTable(verify_ais_csv);
-// });
-
-
 function sendDataToServer(variable1,variable2) {
-    // if(variable1==undefined)
-    // {
-    //     alert("Enter KMZ")
-    // }
-    // else if (variable2==undefined)
-    // {
-    //     alert("Enter Csv")
-    // }
-    // else if(variable1==undefined && variable2==undefined)
-    // {
-    //     alert("select KMZ and CSV")
-    // }
-    // else
-    // {
-        // console.log(variable1);
-        // console.log(variable2);
     const data = {
         xmldata: variable1,
         csvData: variable2
@@ -173,18 +79,6 @@ function sendDataToServer(variable1,variable2) {
             throw new Error('Failed to send data to server');
         })
         .then(data => {
-            // let overlays = map.getOverlays().getArray();
-            // console.log(overlays)
-
-            // Iterate over each overlay and remove it
-            // overlays.forEach(function(overlay) {
-            //     map.removeOverlay(overlay);
-            // });
-            // map.getLayers().forEach(function (layer) {
-            //     if (layer instanceof VectorLayer) {
-            //         map.removeLayer(layer);
-            //     }
-            // });
             const ais_point = data.ais_point;
             const point = data.point;
             const line = data.line;
@@ -198,61 +92,27 @@ function sendDataToServer(variable1,variable2) {
             imo_ship=data.point;
             dead_ship=data.ship_point;
             two_point=data.AIS;
-            // const { ais_point, point, line, ais_point, ship_point, verify_ais } = data;
-
             const correlateAis = document.getElementById("correlateAis")
             correlateAis.addEventListener('click', function()
             {
-                // overlayJson(ship_point, 'red');
-                // overlayJson(point, 'green');
-                // overlayJson(AIS, 'yellow');
                 overlayJson(dead_ship, 'red');
                 overlayJson(imo_ship, 'green');
-                // overlayJson(two_point, 'yellow');
             })
-
-            // document.getElementById(csv_name+'pointButton').addEventListener("click",function()
-            // {
-            //     overlayJson(ais_point, 'blue');
-               
-            // })
-            // document.getElementById(csv_name+'lineButton').addEventListener("click",function()
-            // {
-            //     overlayJson(line, '#006666');
-               
-            // })
-            // document.getElementById(csv_name+'bufferButton').addEventListener("click",function()
-            // {
-            //     overlayJson(buffer, 'rgba(173, 216, 230, 0.2)');
-               
-            // })
             ais_points.addEventListener('click', function()
             {
-                // overlayJson(ais_point, 'blue');
                 overlayJson(point_data, 'blue');
             })
             ais_line.addEventListener('click', function()
             {
-                // overlayJson(line, '#006666');
                 overlayJson(line_data, '#006666');
             })
             ais_buffer.addEventListener('click', function()
             {
-                // overlayJson(buffer, 'rgba(173, 216, 230, 0.2)');
                 overlayJson(buffer_data, 'rgba(173, 216, 230, 0.2)');
             })
-
-            // map.getLayers().forEach(function (layer) {
-            //     if (layer instanceof VectorLayer) {
-            //         map.removeLayer(layer);
-            //     }
-            // });
-            // overlayJson(ship_point, 'red')
-            // overlayJson(point, 'green');
             overlayJson(two_point,'yellow');
             verify_ais_csv = verify_ais;
             csvToTable(verify_ais_csv);
-
     })
         .catch(error => {
             console.error('Error:', error);
@@ -262,17 +122,15 @@ function sendDataToServer(variable1,variable2) {
 function overlayJson(featureData, color) {
     const vectorSourceJson = new VectorSource({
         features: new GeoJSON().readFeatures(featureData, {
-            featureProjection: 'EPSG:3857' // Assuming your map is in EPSG:3857
+            featureProjection: 'EPSG:3857'
         })
     });
     const vectorLayer = new VectorLayer({
         source: vectorSourceJson,
- 
         style: new Style({
             fill: new Fill({
                 color: color,
                 opacity: 0.5
- 
             }),
             stroke: new Stroke({
                 color: color,
@@ -282,18 +140,15 @@ function overlayJson(featureData, color) {
                 radius: 4,
                 fill: new Fill({
                     color: color,
-                    // opacity: 0.5
                 }),
                 stroke: new Stroke({
                     color: color,
-                    // opacity: 0.5,
                     width: 1
                 })
             })
         })
     });
     map.addLayer(vectorLayer);
-    // console.log("added successfully");
 }
  
 function sendForImages(file) {
@@ -303,7 +158,7 @@ function sendForImages(file) {
     })
         .then(response => {
             if (response.ok) {
-                return response; // Assuming server responds with JSON
+                return response;
             }
             throw new Error('Failed to send data to server');
         })
@@ -342,8 +197,6 @@ function createTable(data) {
  
     return table;
 }
- 
- 
  
 document.getElementById("verify_ais_table").addEventListener("click", function () {
     document.getElementById("popup").style.display = "block";
@@ -446,9 +299,9 @@ map.on('click', function (evt) {
         const properties = feature.getProperties();
         let info = '<table>';
         Object.keys(properties).forEach(key => {
-            for_image(properties[key]);
-            info += '<div id="imageContainer"></div>';
-            info += `<tr><td>${key}</td><td>${properties[key]}</td></tr>`;
+            // for_image(properties[key]);
+            // info += '<div id="imageContainer"></div>';
+            if(key!=='geometry') info += `<tr><td>${key}</td><td>${properties[key]}</td></tr>`;
         });
         info += '</table>';
         infoElement.innerHTML = info;
@@ -556,9 +409,6 @@ function handleMapClick(event) {
     const coords = event.coordinate;
     const coord_display = document.getElementById("coord-display");
     coord_display.innerHTML = 'Coordinates: ' + coords[0] + ', ' + coords[1];
-    console.log('Coordinates:', coords[0],coords[1]);
-    console.log(typeof coords);
-    // Perform any other actions with the coordinates as needed
 }
 
 /////////////////////////
@@ -575,8 +425,6 @@ function handleKmlFileUpload(event) {
     const file = event.target.files[0];
     if (file) 
     {
-        // const kmlElements = Array.from(kmlContainer.children);
-        // console.log(kmlElements.length);
         // Check if array has no elements
         if (kmlElements.length === 0) {
             appendKmlFile(file);
@@ -597,46 +445,30 @@ function appendKmlFile(file) {
     // Create a new KML element
     const kmlElement = document.createElement('div');
     kmlElement.classList.add('kml-element');
-    
     // Display the name box
     const nameButton = document.createElement('button');
     nameButton.classList.add('kml-name-button');
     nameButton.textContent = file.name.slice(0, 32);
-
     kmlElements.push(nameButton);
     kmlElement.appendChild(nameButton);
-    
     // Add eye icon
     const eyeIcon = document.createElement('span');
     eyeIcon.textContent = '👁️';
     eyeIcon.classList.add('highlight-icon');
     eyeIcon.addEventListener('click', () => highlightKML(file));
     kmlElement.appendChild(eyeIcon);
-
-    // Add trash icon
-    // const trashIcon = document.createElement('span');
-    // trashIcon.textContent = '🗑️';
-    // trashIcon.classList.add('remove-icon');
-    // trashIcon.addEventListener('click', () => removeKML(kmlElement, file));
-    // kmlElement.appendChild(trashIcon);
     const trashIcon = document.createElement('span');
     trashIcon.classList.add('remove-icon');
     trashIcon.addEventListener('click', () => removeKML(kmlElement, file));
-
-// Create an <img> element for the SVG icon
-const imgElement = document.createElement('img');
-imgElement.src = '/close.svg'; // Set the src attribute to the SVG file path
-
-// Append the <img> element to the trashIcon span
-trashIcon.appendChild(imgElement);
-
-// Append the trashIcon to the kmlElement
-kmlElement.appendChild(trashIcon);
-
-
+    // Create an <img> element for the SVG icon
+    const imgElement = document.createElement('img');
+    imgElement.src = '/close.svg'; // Set the src attribute to the SVG file path
+    // Append the <img> element to the trashIcon span
+    trashIcon.appendChild(imgElement);
+    // Append the trashIcon to the kmlElement
+    kmlElement.appendChild(trashIcon);
     // Set data attribute with file name
     kmlElement.dataset.fileName = file.name;
-
     // Append the KML element to the container
     kmlContainer.appendChild(kmlElement);
 }
@@ -689,10 +521,6 @@ reader.onload = function (event) {
                             }
                         }]
                     };
-
-                    // Overlay the image using overlayJson function
-                    // Pass an empty color to not display pins
-                    // overlayJson(featureData, 'white'); // Pass an empty color
                 });
             }
         });
@@ -768,8 +596,6 @@ function appendCsvFile(file) {
     const nameButton = document.createElement('button');
     nameButton.classList.add('csv-name-button');
     nameButton.textContent = file.name.slice(0, 32);
-    // csv_name=nameButton.textContent;
-    // nameButton.addEventListener('click', () => toggleCSVOptions(csvElement));
    csvElements.push(nameButton);
     csvElement.appendChild(nameButton);
 
@@ -782,10 +608,6 @@ function appendCsvFile(file) {
 
     // Add trash icon
     const trashIcon = document.createElement('span');
-    // trashIcon.textContent = '🗑️';
-    // trashIcon.classList.add('remove-icon');
-    // trashIcon.addEventListener('click', () => removeCSV(csvElement, file));
-    // csvElement.appendChild(trashIcon);
     trashIcon.classList.add('remove-icon');
     trashIcon.addEventListener('click', () => removeCSV(csvElement, file));
 
@@ -858,7 +680,6 @@ function highlightCSV(file,name) {
             element.querySelector('.csv-name-button').style.backgroundColor = '';
             element.classList.remove('highlighted');
         }
-        // sendDataToServer(mainKml,cstext);
     });
 }
 function removeCSV(csvElement, file) {
@@ -998,8 +819,8 @@ function parse_KML(kmlData) {
         
         const vectorSource = new VectorSource({
             features: new KML().readFeatures(kmlData, {
-            dataProjection: 'EPSG:4326',  // Projection of the KML data
-            featureProjection: 'EPSG:3857'  // Projection for the features
+            dataProjection: 'EPSG:4326', 
+            featureProjection: 'EPSG:3857' 
           })
         });
         vectorSource.getFeatures().forEach(feature =>{
@@ -1009,7 +830,6 @@ function parse_KML(kmlData) {
             source: vectorSource
         });
         v_l=vectorLayer;
-        // map.addLayer(vectorLayer);
         map.addLayer(v_l);
     } catch (error) {
         console.error('Error parsing KML and adding image overlay:', error);
@@ -1029,9 +849,7 @@ function addImageOverlayFromHref(href, west, south, east, north)
         })
     });
     image_overlay=imageOverlay;
-    // map.addLayer(imageOverlay);
     map.addLayer(image_overlay);
-    // overlayJson(image_overlay,'');
 }
 function getKMLData(buffer) {
     let kmlData;
@@ -1039,7 +857,6 @@ function getKMLData(buffer) {
     const kmlFile = zip.file(/\.kml$/i)[0];
     if (kmlFile) {
         kmlData = kmlFile.asText();
-        // console.log(kmlData);
     }
     return kmlData;
 }
@@ -1080,8 +897,6 @@ class KMZ extends KML {
         const kmlData = getKMLData(source);
         console.log(kmlData);
         parse_KML(kmlData);
-        // kmlData.then(data => parseKML(data, event.file.name)).catch(error => console.error('Error parsing KML:', error));
-        
         return super.readFeatures(kmlData, options);
     }
 }

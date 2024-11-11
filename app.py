@@ -1,28 +1,19 @@
 import geopandas as gpd
 from shapely.geometry import Point, Polygon, LineString
-import geopandas as gpd
-from shapely.geometry import Point, Polygon, LineString
 import pandas as pd
 import fiona
-import numpy as np
 import geopy
-from geopy import distance
 import datetime
-# from datetime import datetime
-import time
 from math import radians, degrees, cos, sin, asin, sqrt, atan2
-from statistics import mean 
 from shapely import wkt
 import math
-from flask import Flask, request, jsonify, session,current_app,render_template, request, redirect, url_for,send_file,make_response
+from flask import Flask, request, jsonify,current_app,render_template, request, redirect, url_for,make_response
 from flask_cors import CORS
 import io
 from io import BytesIO
 from io import StringIO
 import json
-from geopy.distance import distance
 import zipfile
-import shutil
 import os
 import xml.etree.ElementTree as ET
 import requests
@@ -196,18 +187,6 @@ def get():
         )
         imo.append(i)
 
-
-    # AIS_IMO=[]
-    # AIS_GEOMETRY=[]
-    # for i,row in csv.iterrows():
-    #     AIS_IMO.append(int(row["ID_IMO"]))
-    #     AIS_GEOMETRY.append(Point(float(row["KINEMATIC_POS_LLA_LON"]),float(row["KINEMATIC_POS_LLA_LAT"])))
-   
- 
-    # AIS_Points = gpd.GeoDataFrame(columns=["imo", "geometry"], crs="EPSG:4326")
-    # AIS_Points.geometry = AIS_GEOMETRY
-    # AIS_Points.imo = AIS_IMO
-
     int_points_single = gpd.GeoDataFrame(columns=["IMO", "geometry"], crs="EPSG:4326")
     int_points_single.geometry = geometry
     int_points_single.IMO = imo
@@ -337,19 +316,6 @@ def get():
             ship_list_gdf.at[idx, 'ID_CALLSIGN'] = csv_row.iloc[0]['ID_CALLSIGN']
             ship_list_gdf.at[idx, 'VOYAGE_ETA'] = csv_row.iloc[0]['VOYAGE_ETA']
             ship_list_gdf.at[idx, 'VOYAGE_DESTINATION'] = csv_row.iloc[0]['VOYAGE_DESTINATION']
-    
-    # ship_list_gdf_index=0
-    # for idx,row in ship_list_gdf.itertuples(index=False):
-    #     point_3d = Point(row.geometry.x, row.geometry.y, 0.00000)
-    #     ship_list_gdf.loc[ship_list_gdf_index,'geometry']=point_3d
-    #     index=gdf[gdf['geometry']==point_3d].index[0]
-    #     ship_list_gdf.loc[ship_list_gdf_index,'IMO']=gdf.at[index,'AIS_Correlation']
-    #     csv_row = csv[csv['ID_IMO'] == row.IMO]
-    #     if not csv_row.empty:
-    #         ship_list_gdf.at[idx, 'KINEMATIC_POS_LLA_LAT'] = csv_row.iloc[0]['KINEMATIC_POS_LLA_LAT']
-    #         ship_list_gdf.at[idx, 'AIS_MMSI_COUNTRY'] = csv_row.iloc[0]['AIS_MMSI_COUNTRY']
-    #     ship_list_gdf_index+=1
-
 
     total_ship_point_gdf = gpd.GeoDataFrame(columns= ['IMO','geometry'],crs='EPSG:4326')
     total_ship_point_gdf.geometry=total_ship_list
@@ -377,8 +343,6 @@ def get():
             verify_ais.at[index, 'CORELATION'] = 'YES'
 
     verify_ais_csv = verify_ais.to_csv(index=False)
-    # json_AIS=AIS_Points.to_json()
-    # verify_ais_json=verify_ais.to_json()
     combined_json = {
     "ais_point":json_point,
     "point": json_ship_list_point,
